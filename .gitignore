@@ -1,0 +1,19 @@
+data/
+*.gz
+*.csv
+*.pt
+*.bin
+*.safetensors
+checkpoints/
+outputs/
+
+# python
+__pycache__/
+*.pyc
+.venv/
+venv/
+.ipynb_checkpoints/
+
+# secrets, env
+.env
+*.secret
