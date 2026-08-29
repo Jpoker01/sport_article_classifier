@@ -25,15 +25,16 @@ def main():
 
     optuna.logging.set_verbosity(optuna.logging.WARNING)
     results = {}
-    for name, config in CLASSIFIER_CONFIGS.items():
+    for i, (name, config) in enumerate(CLASSIFIER_CONFIGS.items(), 1):
+        print(f"[{i}/{len(CLASSIFIER_CONFIGS)}] Tuning {name} ...")
         study = optuna.create_study(direction="maximize", study_name=f"tfidf_{name}")
         study.optimize(
             lambda t: objective(t, config, train["text"], y_train, val["text"], y_val),
             n_trials=N_TRIALS,
+            show_progress_bar=True,
         )
-        results[name] = {"best_val_macro_f1": study.best_value, **study.best_params}
-        print(f"{name:16s} val macro-F1 = {study.best_value:.4f}")
-
+    results[name] = {"best_val_macro_f1": study.best_value, **study.best_params}
+    print(f"    {name} val macro-F1 = {study.best_value:.4f}")
     summary = pd.DataFrame(results).T.sort_values("best_val_macro_f1", ascending=False)
     out_dir = ROOT / "results"
     out_dir.mkdir(exist_ok=True)
