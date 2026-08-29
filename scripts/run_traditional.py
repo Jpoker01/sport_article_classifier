@@ -6,10 +6,10 @@ import optuna
 import pandas as pd
 from sklearn.preprocessing import LabelEncoder
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
 from src.config import CLEAN_DATA_PATH, ROOT
 from src.traditional import CLASSIFIER_CONFIGS, objective
-
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 N_TRIALS = 25
 

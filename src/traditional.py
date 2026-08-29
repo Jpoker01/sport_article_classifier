@@ -112,7 +112,6 @@ CLASSIFIER_CONFIGS = {
 def objective(trial, config, train_texts, y_train, val_texts, y_val):
     """Sample vectorizer + classifier hyperparameters, fit, score macro-F1 on val."""
     vectorizer = build_tfidf_vectorizer(
-        ngram_range=trial.suggest_categorical("ngram_range", [(1, 1), (1, 2)]),
         max_features=trial.suggest_categorical("max_features", [20000, 50000, 100000]),
         min_df=trial.suggest_int("min_df", 1, 5),
         sublinear_tf=trial.suggest_categorical("sublinear_tf", [True, False]),
