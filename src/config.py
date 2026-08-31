@@ -7,6 +7,8 @@ DATA = ROOT / "data"
 RAW_DATA_PATH = DATA / "sportoclanky.csv.gz"
 CLEAN_DATA_PATH = DATA / "clean.parquet"
 
+FASTTEXT_MODEL_PATH = DATA / "cc.cs.300.bin"
+
 MIN_CLASS_COUNT = 10 
 
 # split
