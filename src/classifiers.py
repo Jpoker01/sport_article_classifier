@@ -86,7 +86,6 @@ CLASSIFIER_CONFIGS = {
         fixed_hyperparameters={
             "tree_method": "hist", "n_jobs": -1, "random_state": SEED,
             "device": "cuda"
-            # "device": "cuda",  # uncomment to run on the A40 GPU
         },
     ),
 }
