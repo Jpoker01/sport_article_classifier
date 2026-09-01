@@ -5,11 +5,10 @@ import torch
 from torch.utils.data import Dataset
 
 from sklearn.metrics import accuracy_score, f1_score
-from transformers import Trainer
-
 import math
 
 from transformers import (
+    Trainer,
     AutoModelForSequenceClassification,
     AutoTokenizer,
     EarlyStoppingCallback,
@@ -74,12 +73,7 @@ class WeightedTrainer(Trainer):
 
 def objective(trial, model_name, train, val, y_train, y_val,
               class_weights, max_length, epochs, out_dir_base):
-    """Sample hyperparameters, fine-tune once, return val macro-F1.
-
-    Mirrors the pattern of src/traditional.py and src/embeddings.py:
-    trial samples the search space, we build the model + trainer, train,
-    and return the metric that Optuna maximizes.
-    """
+    """Sample hyperparameters, fine-tune once, return val macro-F1."""
     lr = trial.suggest_float("lr", 1e-5, 8e-5, log=True)
     batch_size = trial.suggest_categorical("batch_size", [16, 32])
     weight_decay = trial.suggest_categorical("weight_decay", [0.0, 0.01, 0.1])
