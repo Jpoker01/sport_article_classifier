@@ -16,6 +16,7 @@ from src.config import (
     CLEAN_DATA_PATH,
     PRIMARY_METRIC,
     ROOT,
+    SEED,
     TRANSFORMER_EPOCHS,
     TRANSFORMER_MAX_LENGTH,
 )
@@ -30,6 +31,14 @@ def parse_args():
     parser.add_argument("--epochs", type=int, default=TRANSFORMER_EPOCHS)
     return parser.parse_args()
 
+from src.config import (
+    CLEAN_DATA_PATH,
+    PRIMARY_METRIC,
+    ROOT,
+    SEED,
+    TRANSFORMER_EPOCHS,
+    TRANSFORMER_MAX_LENGTH,
+)
 
 def main():
     args = parse_args()
@@ -54,13 +63,24 @@ def main():
     weights[present_classes] = present_weights
     class_weights = torch.tensor(weights, dtype=torch.float)
 
-    study = optuna.create_study(direction="maximize")
+    def save_progress(study, trial):
+        rows = [{"trial": t.number, PRIMARY_METRIC: t.value, **t.params}
+                for t in study.trials if t.value is not None]
+        summary = pd.DataFrame(rows).sort_values(PRIMARY_METRIC, ascending=False)
+        summary.to_csv(out_dir / "sweep.csv", index=False)
+
+    study = optuna.create_study(
+        direction="maximize",
+        sampler=optuna.samplers.TPESampler(seed=SEED),
+    )
+    
     study.optimize(
         lambda trial: objective(
             trial, args.model_name, train, val, y_train, y_val,
             class_weights, args.max_length, args.epochs, out_dir,
         ),
         n_trials=args.n_trials,
+        callbacks=[save_progress],
     )
 
     print(f"best val {PRIMARY_METRIC}: {study.best_value:.4f}")
