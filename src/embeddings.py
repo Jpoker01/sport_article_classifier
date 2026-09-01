@@ -15,11 +15,12 @@ def load_fasttext(model_path):
     return fasttext.load_model((str(model_path))) # fasttext.load_model can accept only strings - not Path objects
 
 def embed_documents(texts, model):
-    """Takes in a pandas series of texts"""
-    return np.vstack([
+    """Average subword word vectors into one 300-dim vector per document."""
+    vectors = []
+    for text in texts:
         clean_text = text.replace("\n", " ")
-        model.get_sentence_vector(clean_text) for text in texts
-    ])
+        vectors.append(model.get_sentence_vector(clean_text))
+    return np.vstack(vectors)
 
 
 def objective(trial, config, X_train, y_train, X_val, y_val):
