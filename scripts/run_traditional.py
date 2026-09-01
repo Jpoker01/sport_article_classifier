@@ -9,8 +9,8 @@ import argparse
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from src.config import CLEAN_DATA_PATH, ROOT
-from src.traditional import CLASSIFIER_CONFIGS, objective
+from src.classifiers import CLASSIFIER_CONFIGS
+from src.traditional import objective
 
 def parse_args():
     parser = argparse.ArgumentParser()
@@ -45,7 +45,7 @@ def main():
         )
         results[name] = {"best_val_macro_f1": study.best_value, **study.best_params}
         print(f"    {name} val macro-F1 = {study.best_value:.4f}")
-        # save after EACH classifier so a kill never loses finished ones
+
         pd.DataFrame(results).T.to_csv(out_dir / "traditional_sweep.csv")
 
     summary = pd.DataFrame(results).T.sort_values("best_val_macro_f1", ascending=False)
