@@ -7,6 +7,21 @@ from torch.utils.data import Dataset
 from sklearn.metrics import accuracy_score, f1_score
 from transformers import Trainer
 
+import math
+
+from transformers import (
+    AutoModelForSequenceClassification,
+    AutoTokenizer,
+    EarlyStoppingCallback,
+    TrainingArguments,
+)
+
+from src.config import (
+    PRIMARY_METRIC,
+    SEED,
+    TRANSFORMER_EARLY_STOPPING_PATIENCE,
+    TRANSFORMER_WARMUP_RATIO,
+)
 
 class TextClassificationDataset(Dataset):
     """Pytorch dataset definition for the Trainer"""
@@ -55,3 +70,67 @@ class WeightedTrainer(Trainer):
         weight = self.class_weights.to(logits.device) if self.class_weights is not None else None
         loss = torch.nn.functional.cross_entropy(logits, labels, weight=weight)
         return (loss, outputs) if return_outputs else loss
+
+
+def objective(trial, model_name, train, val, y_train, y_val,
+              class_weights, max_length, epochs, out_dir_base):
+    """Sample hyperparameters, fine-tune once, return val macro-F1.
+
+    Mirrors the pattern of src/traditional.py and src/embeddings.py:
+    trial samples the search space, we build the model + trainer, train,
+    and return the metric that Optuna maximizes.
+    """
+    lr = trial.suggest_float("lr", 1e-5, 8e-5, log=True)
+    batch_size = trial.suggest_categorical("batch_size", [16, 32])
+    weight_decay = trial.suggest_categorical("weight_decay", [0.0, 0.01, 0.1])
+    label_smoothing = trial.suggest_categorical("label_smoothing", [0.0, 0.05, 0.1])
+
+    tokenizer = AutoTokenizer.from_pretrained(model_name)
+    train_ds = TextClassificationDataset(train["text"], y_train, tokenizer, max_length)
+    val_ds = TextClassificationDataset(val["text"], y_val, tokenizer, max_length)
+    model = AutoModelForSequenceClassification.from_pretrained(
+        model_name, num_labels=len(class_weights)
+    )
+
+    trial_dir = out_dir_base / f"trial{trial.number:03d}"
+    trial_dir.mkdir(parents=True, exist_ok=True)
+
+    steps_per_epoch = math.ceil(len(train) / batch_size)
+    total_steps = steps_per_epoch * epochs
+    warmup_steps = int(TRANSFORMER_WARMUP_RATIO * total_steps)
+
+    training_args = TrainingArguments(
+        output_dir=str(trial_dir / "checkpoints"),
+        num_train_epochs=epochs,
+        per_device_train_batch_size=batch_size,
+        per_device_eval_batch_size=batch_size * 2,
+        learning_rate=lr,
+        weight_decay=weight_decay,
+        label_smoothing_factor=label_smoothing,
+        warmup_steps=warmup_steps,
+        eval_strategy="epoch",
+        save_strategy="epoch",
+        load_best_model_at_end=True,
+        metric_for_best_model=PRIMARY_METRIC,
+        greater_is_better=True,
+        bf16=True,
+        logging_steps=50,
+        report_to="none",
+        seed=SEED,
+        save_total_limit=1,
+    )
+
+    trainer = WeightedTrainer(
+        model=model,
+        args=training_args,
+        train_dataset=train_ds,
+        eval_dataset=val_ds,
+        compute_metrics=compute_metrics,
+        class_weights=class_weights,
+        callbacks=[EarlyStoppingCallback(
+            early_stopping_patience=TRANSFORMER_EARLY_STOPPING_PATIENCE
+        )],
+    )
+    trainer.train()
+    metrics = trainer.evaluate()
+    return metrics[f"eval_{PRIMARY_METRIC}"]

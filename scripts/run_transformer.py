@@ -17,7 +17,6 @@ from transformers import (
 )
 import argparse
 
-
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from src.config import (
@@ -44,12 +43,20 @@ def parse_args():
     parser.add_argument("--epochs", type=int, default=TRANSFORMER_EPOCHS)
     parser.add_argument("--limit", type=int, default=None,
                         help="Optional cap on rows (for smoke tests).")
+    parser.add_argument("--run-name", default=None,
+                        help="Suffix for the output directory (used by the sweep).")
+    parser.add_argument("--weight-decay", type=float, default=TRANSFORMER_WEIGHT_DECAY)
+    parser.add_argument("--label-smoothing", type=float, default=0.0)
+    parser.add_argument("--no-save", action="store_true",
+                        help="Skip writing model weights (sweep trials only need metrics).")
     return parser.parse_args()
 
 def main():
     args = parse_args()
 
     safe_model_name = args.model_name.replace("/", "_")
+    if args.run_name:
+        safe_model_name = f"{safe_model_name}__{args.run_name}"
     out_dir = ROOT / "results" / "transformer" / safe_model_name
     out_dir.mkdir(parents=True, exist_ok=True)
 
@@ -86,17 +93,24 @@ def main():
     total_steps = steps_per_epoch * args.epochs
     warmup_steps = int(TRANSFORMER_WARMUP_RATIO * total_steps)
     
+    callbacks = []
+    if not args.no_save:
+        callbacks.append(EarlyStoppingCallback(
+            early_stopping_patience=TRANSFORMER_EARLY_STOPPING_PATIENCE
+        ))
+
     training_args = TrainingArguments(
         output_dir=str(out_dir / "checkpoints"),
         num_train_epochs=args.epochs,
         per_device_train_batch_size=args.batch_size,
         per_device_eval_batch_size=args.batch_size * 2,
         learning_rate=args.lr,
-        weight_decay=TRANSFORMER_WEIGHT_DECAY,
+        weight_decay=args.weight_decay,
+        label_smoothing_factor=args.label_smoothing,
         warmup_steps=warmup_steps,
         eval_strategy="epoch",
-        save_strategy="epoch",
-        load_best_model_at_end=True,
+        save_strategy="no" if args.no_save else "epoch",
+        load_best_model_at_end=not args.no_save,
         metric_for_best_model=PRIMARY_METRIC,
         greater_is_better=True,
         bf16=True,
@@ -113,21 +127,24 @@ def main():
         eval_dataset=val_ds,
         compute_metrics=compute_metrics,
         class_weights=class_weights,
-        callbacks=[EarlyStoppingCallback(
-            early_stopping_patience=TRANSFORMER_EARLY_STOPPING_PATIENCE
-        )],
+        callbacks=callbacks,
     )
 
     trainer.train()
 
-    best_dir = out_dir / "best"
-    trainer.save_model(str(best_dir))
-    tokenizer.save_pretrained(str(best_dir))
-    np.save(out_dir / "label_classes.npy", encoder.classes_)
+    best_f1 = max(
+        (log[f"eval_{PRIMARY_METRIC}"] for log in trainer.state.log_history
+         if f"eval_{PRIMARY_METRIC}" in log),
+        default=float("nan"),
+    )
+    pd.DataFrame([{PRIMARY_METRIC: best_f1}]).to_csv(out_dir / "val_metrics.csv", index=False)
+    print(f"best val {PRIMARY_METRIC}: {best_f1:.4f}")
 
-    val_metrics = trainer.evaluate()
-    print(val_metrics)
-    pd.DataFrame([val_metrics]).to_csv(out_dir / "val_metrics.csv", index=False)
+    if not args.no_save:
+        best_dir = out_dir / "best"
+        trainer.save_model(str(best_dir))
+        tokenizer.save_pretrained(str(best_dir))
+        np.save(out_dir / "label_classes.npy", encoder.classes_)
 
 
 if __name__ == "__main__":
