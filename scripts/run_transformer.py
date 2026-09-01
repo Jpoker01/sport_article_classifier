@@ -1,6 +1,7 @@
 """Fine-tune a Czech transformer encoder"""
 
 import sys
+import math
 from pathlib import Path
 
 import numpy as np
@@ -14,6 +15,7 @@ from transformers import (
     EarlyStoppingCallback,
     TrainingArguments,
 )
+import argparse
 
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
@@ -52,6 +54,9 @@ def main():
     out_dir.mkdir(parents=True, exist_ok=True)
 
     df = pd.read_parquet(CLEAN_DATA_PATH)
+    encoder = LabelEncoder().fit(df["category"])
+    num_labels = len(encoder.classes_)
+
     train = df[df["split"] == "train"]
     val = df[df["split"] == "val"]
 
@@ -59,11 +64,16 @@ def main():
         train = train.sample(n=min(args.limit, len(train)), random_state=SEED)
         val = val.sample(n=min(args.limit, len(val)), random_state=SEED)
 
-    class_weights = torch.tensor(
-        compute_class_weight("balanced", classes=np.arange(num_labels), y=y_train),
-        dtype=torch.float,
-    )
+    y_train = encoder.transform(train["category"])
+    y_val = encoder.transform(val["category"])
+    num_labels = len(encoder.classes_)
 
+    present_classes = np.unique(y_train)
+    present_weights = compute_class_weight("balanced", classes=present_classes, y=y_train)
+    weights = np.ones(num_labels, dtype=np.float32)
+    weights[present_classes] = present_weights
+    class_weights = torch.tensor(weights, dtype=torch.float)
+    
     tokenizer = AutoTokenizer.from_pretrained(args.model_name)
     train_ds = TextClassificationDataset(train["text"], y_train, tokenizer, args.max_length)
     val_ds = TextClassificationDataset(val["text"], y_val, tokenizer, args.max_length)
@@ -72,14 +82,18 @@ def main():
         args.model_name, num_labels=num_labels
     )
 
-       training_args = TrainingArguments(
+    steps_per_epoch = math.ceil(len(train) / args.batch_size)
+    total_steps = steps_per_epoch * args.epochs
+    warmup_steps = int(TRANSFORMER_WARMUP_RATIO * total_steps)
+    
+    training_args = TrainingArguments(
         output_dir=str(out_dir / "checkpoints"),
         num_train_epochs=args.epochs,
         per_device_train_batch_size=args.batch_size,
         per_device_eval_batch_size=args.batch_size * 2,
         learning_rate=args.lr,
         weight_decay=TRANSFORMER_WEIGHT_DECAY,
-        warmup_ratio=TRANSFORMER_WARMUP_RATIO,
+        warmup_steps=warmup_steps,
         eval_strategy="epoch",
         save_strategy="epoch",
         load_best_model_at_end=True,
