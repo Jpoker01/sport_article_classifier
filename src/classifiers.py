@@ -1,5 +1,6 @@
-"""Shared file of 'classical' classifiers and their Optuna search set-ups"""
+"""Shared file for 'traditional' classifiers and their Optuna search set-ups"""
 from dataclasses import dataclass, field
+from ast import literal_eval
 import pandas as pd
 
 from sklearn.linear_model import LogisticRegression
@@ -7,28 +8,48 @@ from sklearn.svm import LinearSVC
 from sklearn.naive_bayes import MultinomialNB, ComplementNB #complementNB added as it is preferred for imbalanced datasets
 from sklearn.ensemble import RandomForestClassifier
 from xgboost import XGBClassifier
-from ast import literal_eval
 
-from src.config import SEED
+from src.config import SEED, DEVICE
 
 @dataclass
 class ClassifierConfig:
-    """Wraps a classifier class together with its Optuna search space."""
+    """Wraps a classifier class together with its Optuna search space.
+
+    Attributes:
+        classifier_object: classifier class
+        searched_hyperparameters: Maps a parameter name to a callable that samples it from an Optuna trial.
+        fixed_hyperparameters: Parameters passed unchanged on every build.
+    """
     classifier_object: type
     searched_hyperparameters: dict = field(default_factory=dict)
     fixed_hyperparameters: dict = field(default_factory=dict)
 
     def sample(self, trial):
-        """Draw one set of hyperparameters from the search space."""
+        """Draw one set of hyperparameters from the search space.
+
+        Args:
+            trial: Optuna trial used to sample each searched parameter.
+
+        Returns:
+            Dict mapping parameter names to the sampled values.
+        """
         return {
             name: suggest(trial)
             for name, suggest in self.searched_hyperparameters.items()
         }
 
     def build(self, params):
-        """Instantiate the classifier from given params plus the fixed ones."""
-        return self.classifier_object(**params, **self.fixed_hyperparameters)
+        """Instantiate the classifier from given params plus the fixed ones.
 
+        Args:
+            params: Hyperparameters to pass to the classifier, either from
+            `sample()` during tuning or parsed from a trials CSV during
+            finalization.
+
+        Returns:
+            An unfitted classifier instance.
+        """
+        return self.classifier_object(**params, **self.fixed_hyperparameters)
 
 CLASSIFIER_CONFIGS = {
     "logreg": ClassifierConfig(
@@ -90,15 +111,24 @@ CLASSIFIER_CONFIGS = {
         },
         fixed_hyperparameters={
             "tree_method": "hist", "n_jobs": -1, "random_state": SEED,
-            "device": "cuda"
+            "device": DEVICE
         },
     ),
 }
 
 
-
 def parse_value(value):
-    """Turn a CSV cell back into its Python type; leave plain strings as-is."""
+    """Turn a CSV cell back into its Python type; leave plain strings as-is.
+
+    Args:
+        value: Cell value read from a trials CSV.
+
+    Returns:
+        The value as bool, int, float or str. Whole-number floats are
+        downcast to int because pandas widens integer columns to float64
+        when other rows hold NaN, and classifiers such as XGBoost reject
+        float values for integer hyperparameters like n_estimators.
+    """
     if pd.isna(value):
         return None
     try:
@@ -109,9 +139,19 @@ def parse_value(value):
         return int(parsed)
     return parsed
 
+def load_best_trial(trials_path, metric_column="best_val_macro_f1") -> tuple:
+    """Return the best-scoring trial recorded in an Optuna trials CSV.
 
-def load_best_trial(trials_path, metric_column="best_val_macro_f1"):
-    """Return (name, score, params) for the best trial recorded in a CSV."""
+    Args:
+        trials_path: Path to a CSV whose index is the classifier name and
+        whose columns hold the metric plus sampled hyperparameters.
+        metric_column: Column to rank trials by, higher is better.
+
+    Returns:
+        Tuple of (classifier name, metric value, hyperparameter dict).
+        NaN columns are dropped from the dict because different
+        classifiers have different search spaces, so the CSV is sparse.
+    """
     trials = pd.read_csv(trials_path, index_col=0)
     row = trials.sort_values(metric_column, ascending=False).iloc[0]
     params = {

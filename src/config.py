@@ -1,4 +1,8 @@
 from pathlib import Path
+import torch
+
+#check for GPU
+DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 
 #Seed for reproducility of experiments
 SEED = 42
