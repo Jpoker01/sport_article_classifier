@@ -25,7 +25,7 @@ def embed_documents(texts, model):
 
 def objective(trial, config, X_train, y_train, X_val, y_val):
     """Sample classifier hyperparameters, fit on fixed embeddings, score macro-F1 on val."""
-    classifier = config.build(trial)
+    classifier = config.build(config.sample(trial))
     classifier.fit(X_train, y_train)
     predictions = classifier.predict(X_val)
     return f1_score(y_val, predictions, average="macro")
