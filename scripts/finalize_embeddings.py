@@ -1,16 +1,15 @@
 """Rebuild the best fastText trial on the training split and evaluate it on test."""
-import sys
-
 import pandas as pd
 from sklearn.preprocessing import LabelEncoder, StandardScaler
 
 from src.classifiers import CLASSIFIER_CONFIGS, load_best_trial
-from src.config import CLEAN_DATA_PATH, FASTTEXT_MODEL_PATH, RESULTS_PATH, ROOT
+from src.config import CLEAN_DATA_PATH, FASTTEXT_MODEL_PATH, RESULTS_PATH
 from src.embeddings import embed_documents, load_fasttext
 from src.evaluate import evaluate, full_report
 
 def main():
-    name, val_score, params = load_best_trial(RESULTS_PATH / "embeddings_trials.csv")
+    """Refit the winning classifier on fastText embeddings and score it on test."""
+    name, val_score, params = load_best_trial(RESULTS_PATH / "embeddings_optuna_trials.csv")
     print(f"Best trial: {name} (val macro_f1: {val_score:.4f})")
     print(f"Classifier params: {params}")
 
@@ -39,13 +38,16 @@ def main():
     print(metrics)
     full_report(y_test, y_pred, target_names=encoder.classes_)
     
-    pd.DataFrame([metrics]).to_csv(RESULTS_PATH / "embeddings_test_metrics.csv", index=False)
+    metrics_path = RESULTS_PATH / "embeddings_test_metrics.csv"
+    predictions_path = RESULTS_PATH / "embeddings_test_predictions.csv"
+    pd.DataFrame([metrics]).to_csv(metrics_path, index=False)
     pd.DataFrame({
         "text": test["text"].values,
         "true": encoder.inverse_transform(y_test),
         "pred": encoder.inverse_transform(y_pred),
-    }).to_csv(RESULTS_PATH / "embeddings_test_predictions.csv", index=False)
-
+    }).to_csv(predictions_path, index=False)
+    print(f"\nSaved: {metrics_path}")
+    print(f"Saved: {predictions_path}")
 
 if __name__ == "__main__":
     main()
