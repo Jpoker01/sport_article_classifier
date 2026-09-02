@@ -2,7 +2,6 @@
 
 import sys
 import math
-from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -16,8 +15,6 @@ from transformers import (
     TrainingArguments,
 )
 import argparse
-
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from src.config import (
     CLEAN_DATA_PATH,

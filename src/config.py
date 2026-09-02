@@ -7,9 +7,9 @@ SEED = 42
 ROOT = Path(__file__).resolve().parents[1]
 DATA_PATH = ROOT / "data"
 
-RAW_DATA_PATH = DATA / "sportoclanky.csv.gz"
-CLEAN_DATA_PATH = DATA / "clean.parquet"
-FASTTEXT_MODEL_PATH = DATA / "cc.cs.300.bin"
+RAW_DATA_PATH = DATA_PATH / "sportoclanky.csv.gz"
+CLEAN_DATA_PATH = DATA_PATH / "clean.parquet"
+FASTTEXT_MODEL_PATH = DATA_PATH / "cc.cs.300.bin"
 
 RESULTS_PATH = ROOT / "results"
 

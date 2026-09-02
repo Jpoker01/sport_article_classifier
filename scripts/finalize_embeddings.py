@@ -1,20 +1,16 @@
 """Rebuild the best fastText trial on the training split and evaluate it on test."""
 import sys
-from pathlib import Path
 
 import pandas as pd
 from sklearn.preprocessing import LabelEncoder, StandardScaler
-
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from src.classifiers import CLASSIFIER_CONFIGS, load_best_trial
 from src.config import CLEAN_DATA_PATH, FASTTEXT_MODEL_PATH, RESULTS_PATH, ROOT
 from src.embeddings import embed_documents, load_fasttext
 from src.evaluate import evaluate, full_report
 
-
 def main():
-    name, val_score, params = load_best_trial(RESULTS / "embeddings_trials.csv")
+    name, val_score, params = load_best_trial(RESULTS_PATH / "embeddings_trials.csv")
     print(f"Best trial: {name} (val macro_f1: {val_score:.4f})")
     print(f"Classifier params: {params}")
 

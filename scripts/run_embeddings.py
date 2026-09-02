@@ -1,13 +1,10 @@
 """Run the traditional fastText classifier sweep with Optuna and save the results."""
 import sys
-from pathlib import Path
 
 import optuna
 import pandas as pd
 from sklearn.preprocessing import LabelEncoder, StandardScaler
 import argparse
-
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from src.config import CLEAN_DATA_PATH, FASTTEXT_MODEL_PATH, RESULTS_PATH, ROOT
 from src.embeddings import EMBEDDING_CONFIGS, embed_documents, load_fasttext, objective
@@ -37,8 +34,7 @@ def main():
     X_train = scaler.transform(X_train)
     X_val = scaler.transform(X_val)
 
-    out_dir = RESULTS_PATH
-    out_dir.mkdir(parents=True, exist_ok=True)
+    RESULTS_PATH.mkdir(parents=True, exist_ok=True)
 
     results = {}
     for i, (name, config) in enumerate(EMBEDDING_CONFIGS.items(), 1):
@@ -51,11 +47,11 @@ def main():
         )
         results[name] = {"best_val_macro_f1": study.best_value, **study.best_params}
         print(f"{name}: {study.best_value:.4f}")
-        pd.DataFrame(results).T.to_csv(out_dir / "embeddings_sweep.csv")
+        pd.DataFrame(results).T.to_csv(RESULTS_PATH / "embeddings_sweep.csv")
 
     summary = pd.DataFrame(results).T.sort_values("best_val_macro_f1", ascending=False)
-    summary.to_csv(out_dir / "embeddings_sweep.csv")
-    print(f"\nSaved: {out_dir / 'traditional_sweep.csv'}")
+    summary.to_csv(RESULTS_PATH / "embeddings_sweep.csv")
+    print(f"\nSaved: {RESULTS_PATH / 'traditional_sweep.csv'}")
     print(summary)
 
 

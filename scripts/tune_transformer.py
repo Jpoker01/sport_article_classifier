@@ -1,6 +1,5 @@
 """Optuna sweep over transformer fine-tuning hyperparameters."""
 import sys
-from pathlib import Path
 
 import argparse
 import numpy as np
@@ -9,8 +8,6 @@ import pandas as pd
 import torch
 from sklearn.preprocessing import LabelEncoder
 from sklearn.utils.class_weight import compute_class_weight
-
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from src.config import (
     CLEAN_DATA_PATH,
@@ -36,7 +33,7 @@ def main():
     args = parse_args()
 
     safe_model_name = args.model_name.replace("/", "_")
-    out_dir = RESULTS_PATH / "transformer" / f"{safe_model_name}__tune"
+    out_dir = RESULTS_PATH / "transformer" / f"{safe_model_name}__tuning"
     out_dir.mkdir(parents=True, exist_ok=True)
 
     df = pd.read_parquet(CLEAN_DATA_PATH)

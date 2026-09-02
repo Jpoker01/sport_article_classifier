@@ -12,8 +12,6 @@ from sklearn.preprocessing import LabelEncoder
 from torch.utils.data import DataLoader
 from transformers import AutoModelForSequenceClassification, AutoTokenizer
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-
 from src.config import CLEAN_DATA_PATH, TRANSFORMER_MAX_LENGTH
 from src.evaluate import evaluate, full_report
 from src.transformer import TextClassificationDataset

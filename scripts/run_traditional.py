@@ -1,13 +1,10 @@
 """Tune TF-IDF + classical classifiers with Optuna and record every trial."""
 import sys
-from pathlib import Path
 
 import argparse
 import optuna
 import pandas as pd
 from sklearn.preprocessing import LabelEncoder
-
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from src.classifiers import CLASSIFIER_CONFIGS
 from src.config import CLEAN_DATA_PATH, RESULTS_PATH, ROOT
@@ -34,9 +31,8 @@ def main():
 
     optuna.logging.set_verbosity(optuna.logging.WARNING)
 
-    out_dir = RESULTS_PATH
-    out_dir.mkdir(parents=True, exist_ok=True)
-    trials_path = out_dir / "traditional_trials.csv"
+    RESULTS_PATH.mkdir(parents=True, exist_ok=True)
+    trials_path = RESULTS_PATH / "traditional_trials.csv"
 
     results = {}
     for i, (name, config) in enumerate(CLASSIFIER_CONFIGS.items(), 1):
