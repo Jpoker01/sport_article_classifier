@@ -1,3 +1,27 @@
 [build-system]
 requires = ["setuptools>=68"]
 build-backend = "setuptools.build_meta"
+
+[project]
+name = "sport-article-classifier" 
+version = "0.1.0" 
+description = "Classification of Czech sport news articles into sport categories" #meta-info
+readme = "README.md"
+requires-python = ">=3.13" 
+dependencies = [
+    "pandas==3.0.3",
+    "pyarrow==24.0.0",
+    "numpy==2.4.6",
+    "scikit-learn==1.9.0",
+    "xgboost==3.4.1",
+    "optuna==4.9.0",
+    "torch==2.13.0",
+    "transformers==5.16.1",
+    "accelerate==1.14.0",
+    "fasttext==0.9.3",
+    "matplotlib==3.11.0",
+    "tqdm==4.68.3",
+]
+
+[tool.setuptools.packages.find] # tells the tool WHICH part of the codebase to use as the package.
+include = ["src*"]

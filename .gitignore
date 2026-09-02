@@ -14,6 +14,10 @@ __pycache__/
 venv/
 .ipynb_checkpoints/
 
+*.egg-info/
+build/
+dist/
+
 # secrets, env
 .env
 *.secret
