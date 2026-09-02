@@ -14,6 +14,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from src.config import (
     CLEAN_DATA_PATH,
+    RESULTS_PATH,
     PRIMARY_METRIC,
     ROOT,
     SEED,
@@ -31,20 +32,11 @@ def parse_args():
     parser.add_argument("--epochs", type=int, default=TRANSFORMER_EPOCHS)
     return parser.parse_args()
 
-from src.config import (
-    CLEAN_DATA_PATH,
-    PRIMARY_METRIC,
-    ROOT,
-    SEED,
-    TRANSFORMER_EPOCHS,
-    TRANSFORMER_MAX_LENGTH,
-)
-
 def main():
     args = parse_args()
 
     safe_model_name = args.model_name.replace("/", "_")
-    out_dir = ROOT / "results" / "transformer" / f"{safe_model_name}__tune"
+    out_dir = RESULTS_PATH / "transformer" / f"{safe_model_name}__tune"
     out_dir.mkdir(parents=True, exist_ok=True)
 
     df = pd.read_parquet(CLEAN_DATA_PATH)

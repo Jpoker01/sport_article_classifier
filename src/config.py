@@ -1,16 +1,19 @@
 from pathlib import Path
 
-#Seed for reproducility
+#Seed for reproducility of experiments
 SEED = 42
 
 # Data paths
 ROOT = Path(__file__).resolve().parents[1]
-DATA = ROOT / "data"
+DATA_PATH = ROOT / "data"
+
 RAW_DATA_PATH = DATA / "sportoclanky.csv.gz"
 CLEAN_DATA_PATH = DATA / "clean.parquet"
 FASTTEXT_MODEL_PATH = DATA / "cc.cs.300.bin"
 
-# Training / test / validation split constants.
+RESULTS_PATH = ROOT / "results"
+
+# Training / test / validation split constants
 VAL_SIZE = 0.1
 TEST_SIZE = 0.1
 

@@ -10,7 +10,7 @@ from sklearn.preprocessing import LabelEncoder
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from src.classifiers import CLASSIFIER_CONFIGS
-from src.config import CLEAN_DATA_PATH, ROOT
+from src.config import CLEAN_DATA_PATH, RESULTS_PATH, ROOT
 from src.traditional import objective
 
 
@@ -34,7 +34,7 @@ def main():
 
     optuna.logging.set_verbosity(optuna.logging.WARNING)
 
-    out_dir = ROOT / "results"
+    out_dir = RESULTS_PATH
     out_dir.mkdir(parents=True, exist_ok=True)
     trials_path = out_dir / "traditional_trials.csv"
 

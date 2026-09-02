@@ -21,6 +21,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from src.config import (
     CLEAN_DATA_PATH,
+    RESULTS_PATH,
     PRIMARY_METRIC,
     ROOT,
     SEED,
@@ -57,7 +58,7 @@ def main():
     safe_model_name = args.model_name.replace("/", "_")
     if args.run_name:
         safe_model_name = f"{safe_model_name}__{args.run_name}"
-    out_dir = ROOT / "results" / "transformer" / safe_model_name
+    out_dir = RESULTS_PATH / "transformer" / safe_model_name
     out_dir.mkdir(parents=True, exist_ok=True)
 
     df = pd.read_parquet(CLEAN_DATA_PATH)

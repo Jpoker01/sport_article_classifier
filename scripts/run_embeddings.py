@@ -9,7 +9,7 @@ import argparse
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from src.config import CLEAN_DATA_PATH, FASTTEXT_MODEL_PATH, ROOT
+from src.config import CLEAN_DATA_PATH, FASTTEXT_MODEL_PATH, RESULTS_PATH, ROOT
 from src.embeddings import EMBEDDING_CONFIGS, embed_documents, load_fasttext, objective
 
 def parse_args():
@@ -37,7 +37,7 @@ def main():
     X_train = scaler.transform(X_train)
     X_val = scaler.transform(X_val)
 
-    out_dir = ROOT / "results"
+    out_dir = RESULTS_PATH
     out_dir.mkdir(parents=True, exist_ok=True)
 
     results = {}
