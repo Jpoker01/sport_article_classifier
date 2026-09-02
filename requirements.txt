@@ -3,4 +3,4 @@ optuna==4.9.0
 xgboost==3.4.1
 fasttext==0.9.3
 transformers==5.16.1
-accelerate=1.14.0
+accelerate==1.14.0

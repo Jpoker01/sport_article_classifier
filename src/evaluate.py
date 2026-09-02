@@ -16,7 +16,7 @@ def evaluate(y_true, y_pred) -> dict:
     }
     return result_dict
 
-def full_report(y_true, y_pred, labels=None):
-    """Print the per-class report and return the confusion matrix."""
-    print(classification_report(y_true, y_pred, zero_division=0))
+def full_report(y_true, y_pred, labels=None, target_names=None):
+    print(classification_report(y_true, y_pred, labels=labels,
+                                target_names=target_names, zero_division=0))
     return confusion_matrix(y_true, y_pred, labels=labels)

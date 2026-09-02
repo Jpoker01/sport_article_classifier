@@ -1,11 +1,13 @@
 """Shared file of 'classical' classifiers and their Optuna search set-ups"""
 from dataclasses import dataclass, field
+import pandas as pd
 
 from sklearn.linear_model import LogisticRegression
 from sklearn.svm import LinearSVC
 from sklearn.naive_bayes import MultinomialNB, ComplementNB #complementNB added as it is preferred for imbalanced datasets
 from sklearn.ensemble import RandomForestClassifier
 from xgboost import XGBClassifier
+from ast import literal_eval
 
 from src.config import SEED
 
@@ -16,13 +18,16 @@ class ClassifierConfig:
     searched_hyperparameters: dict = field(default_factory=dict)
     fixed_hyperparameters: dict = field(default_factory=dict)
 
-    def build(self, trial):
-        """Instantiate the classifier with sampled + fixed hyperparameters."""
-        sampled = {
+    def sample(self, trial):
+        """Draw one set of hyperparameters from the search space."""
+        return {
             name: suggest(trial)
             for name, suggest in self.searched_hyperparameters.items()
         }
-        return self.classifier_object(**sampled, **self.fixed_hyperparameters)
+
+    def build(self, params):
+        """Instantiate the classifier from given params plus the fixed ones."""
+        return self.classifier_object(**params, **self.fixed_hyperparameters)
 
 
 CLASSIFIER_CONFIGS = {
@@ -89,3 +94,31 @@ CLASSIFIER_CONFIGS = {
         },
     ),
 }
+
+
+
+def parse_value(value):
+    """Turn a CSV cell back into its Python type; leave plain strings as-is."""
+    if pd.isna(value):
+        return None
+    try:
+        parsed = literal_eval(str(value))
+    except (ValueError, SyntaxError):
+        return value
+    if isinstance(parsed, float) and parsed.is_integer():
+        return int(parsed)
+    return parsed
+
+
+def load_best_trial(trials_path, metric_column="best_val_macro_f1"):
+    """Return (name, score, params) for the best trial recorded in a CSV."""
+    trials = pd.read_csv(trials_path, index_col=0)
+    row = trials.sort_values(metric_column, ascending=False).iloc[0]
+    params = {
+        column: parse_value(value)
+        for column, value in row.items()
+        if column != metric_column and not pd.isna(value)
+    }
+    return row.name, row[metric_column], params
+
+
