@@ -7,7 +7,7 @@ name = "sport-article-classifier"
 version = "0.1.0" 
 description = "Classification of Czech sport news articles into sport categories" #meta-info
 readme = "README.md"
-requires-python = ">=3.13" 
+requires-python = ">=3.11" 
 dependencies = [
     "pandas==3.0.3",
     "pyarrow==24.0.0",
