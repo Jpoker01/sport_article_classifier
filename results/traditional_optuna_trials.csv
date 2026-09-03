@@ -1,2 +1,6 @@
-,best_val_macro_f1,tfidf_analyzer,tfidf_char_ngram_max,tfidf_max_features,tfidf_min_df,tfidf_sublinear_tf,C
-logreg,0.9619063916169767,char_wb,5,100000,4,False,35.255114990241985
+,best_val_macro_f1,tfidf_analyzer,tfidf_char_ngram_max,tfidf_max_features,tfidf_min_df,tfidf_sublinear_tf,C,loss,alpha,fit_prior,tfidf_ngram_max,norm,n_estimators,max_depth,max_features,min_samples_leaf
+logreg,0.9619063916169767,char_wb,5,100000,4,False,35.255114990241985,,,,,,,,,
+linear_svc,0.9604720226155443,char_wb,5,50000,1,True,1.4109276032057327,squared_hinge,,,,,,,,
+multinomial_nb,0.9315182592275523,char_wb,4,50000,1,True,,,0.0166348977050635,True,,,,,,
+complement_nb,0.9392181870184066,word,,100000,1,True,,,0.011853010723386811,False,1,False,,,,
+random_forest,0.831374633562054,,,100000,5,True,,,,,2,,400,58,log2,1

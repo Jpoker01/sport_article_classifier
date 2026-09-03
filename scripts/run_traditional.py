@@ -17,6 +17,8 @@ def parse_args():
     """
     parser = argparse.ArgumentParser()
     parser.add_argument("--n-trials", type=int, default=50)
+    parser.add_argument("--only", nargs="+", default=None,
+                        help="Run only these classifiers by name and merge into existing results.")
     return parser.parse_args()
 
 
@@ -38,8 +40,16 @@ def main():
     RESULTS_PATH.mkdir(parents=True, exist_ok=True)
     trials_path = RESULTS_PATH / "traditional_optuna_trials.csv"
 
-    results = {}
-    for i, (name, config) in enumerate(CLASSIFIER_CONFIGS.items(), 1):
+    results = {}    
+    if trials_path.exists():
+        results = pd.read_csv(trials_path, index_col=0).to_dict("index")
+
+    configs = CLASSIFIER_CONFIGS
+    if args.only:
+        configs = {name: cfg for name, cfg in CLASSIFIER_CONFIGS.items()
+                   if name in args.only}
+        
+    for i, (name, config) in enumerate(configs.items(), 1):
         print(f"[{i}/{len(CLASSIFIER_CONFIGS)}] | Tuning {name} ...")
         study = optuna.create_study(direction="maximize", study_name=f"tfidf_{name}")
         study.optimize(
