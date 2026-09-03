@@ -34,6 +34,7 @@ Macro-F1 is the primary metric because the classes are heavily imbalanced.
 ### Software requirements
 - Python 3.13
 - Git
+- A C++ compiler, required to build fastText
 - Linux, macOS or WSL2 on Windows
 
 ### Hardware requirements
