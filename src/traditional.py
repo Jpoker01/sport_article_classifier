@@ -64,7 +64,6 @@ def objective(trial, config, train_texts, y_train, val_texts, y_val):
     sublinear_tf=trial.suggest_categorical("tfidf_sublinear_tf", [True, False]),
     )
  
- 
     X_train = vectorizer.fit_transform(train_texts)
     X_val = vectorizer.transform(val_texts)
  
