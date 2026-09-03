@@ -87,15 +87,18 @@ python scripts/finalize_embeddings.py
 ```
 
 **Fine-tuned transformer**
+
+Two encoders were tried in the reported experiments: `ufal/robeczech-base` (selected) and `Seznam/small-e-czech` (dropped at 0.63 validation macro-F1). Substitute either for `<MODEL_NAME>`.
+
 ```bash
-python scripts/tune_transformer.py --model-name ufal/robeczech-base --n-trials N_TRIALS
-python scripts/run_transformer.py --model-name ufal/robeczech-base --run-name tuned \
+python scripts/tune_transformer.py --model-name <MODEL_NAME> --n-trials N_TRIALS
+python scripts/run_transformer.py --model-name <MODEL_NAME> --run-name tuned \
     --lr <LR> --batch-size <BATCH_SIZE> --weight-decay <WEIGHT_DECAY> --label-smoothing <LABEL_SMOOTHING>
-python scripts/finalize_transformer.py \
-    --model-dir results/transformer/ufal_robeczech-base__tuned/best
+python scripts/finalize_transformer.py --model-dir <RESULTS_DIR>
 ```
-Replace the transformer parameters with the winning row from  
-`results/transformer/ufal_robeczech-base_optuna_trials.csv`.
+
+Replace `<LR>`, `<BATCH_SIZE>`, `<WEIGHT_DECAY>` and `<LABEL_SMOOTHING>` with the winning row from  
+`results/transformer/<model-name>_optuna_trials.csv` (slashes in the model name replaced with underscores). `<RESULTS_DIR>` is the path to the `best/` subfolder of the tuned run, e.g. `results/transformer/ufal_robeczech-base__tuned/best`.
 
 ### Results analysis
 
