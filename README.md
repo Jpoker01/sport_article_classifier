@@ -92,7 +92,7 @@ python scripts/finalize_embeddings.py
 
 **Fine-tuned transformer**
 
-The reported results use `ufal/robeczech-base`. `Seznam/small-e-czech` was also tried but dropped at 0.63 validation macro-F1. The `--model-name` argument accepts any Hugging Face model identifier compatible with `AutoModelForSequenceClassification`.
+The reported results use `ufal/robeczech-base`. The `--model-name` argument accepts any Hugging Face model identifier compatible with `AutoModelForSequenceClassification`.
 
 ```bash
 python scripts/tune_transformer.py --model-name ufal/robeczech-base --n-trials N_TRIALS
