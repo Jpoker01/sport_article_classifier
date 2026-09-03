@@ -50,10 +50,11 @@ def main():
     print(f"\nSaved: {metrics_path}")
     print(f"Saved: {predictions_path}")
 
+    model_path = RESULTS_PATH / "embeddings_model.joblib"
     joblib.dump(
-    {"vectorizer": vectorizer, "classifier": classifier, "encoder": encoder},
-    RESULTS_PATH / "traditional_model.joblib",
-    )
+        {"scaler": scaler, "classifier": classifier, "encoder": encoder},
+        model_path,
+     )
 
 if __name__ == "__main__":
     main()
