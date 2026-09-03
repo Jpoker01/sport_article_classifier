@@ -22,8 +22,9 @@ Macro-F1 is the primary metric because the classes are heavily imbalanced.
 *   **Text representations:**
     *   **TF-IDF (scikit-learn):** Word-level unigrams and bigrams, sparse features.
     *   **fastText:** Pretrained Czech 300-dimensional embeddings (`cc.cs.300.bin`), averaged into one document vector.
-    *   **RobeCzech (`ufal/robeczech-base`):** Czech RoBERTa encoder, fine-tuned end to end (all parameters trainable).
-*   **Classifiers:** scikit-learn (LogisticRegression, LinearSVC, MultinomialNB, ComplementNB, RandomForest) and XGBoost
+    *   **Transformers:** Two Czech encoders tried, both fine-tuned end to end (all parameters trainable):
+        *   **RobeCzech (`ufal/robeczech-base`):** Czech RoBERTa. Selected for final results.
+        *   **Small-E-Czech (`Seznam/small-e-czech`):** Czech ELECTRA. Tried and dropped after reaching only 0.63 validation macro-F1 with the same recipe. Reported as a negative result rather than hidden.*   **Classifiers:** scikit-learn (LogisticRegression, LinearSVC, MultinomialNB, ComplementNB, RandomForest) and XGBoost
 *   **Hyperparameter tuning:** Optuna with the TPE sampler, per-classifier studies, macro-F1 as the objective.
 *   **Environment:** Jupyter for analysis and results, PyCharm for development.
 
