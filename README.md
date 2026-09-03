@@ -20,7 +20,7 @@ Macro-F1 is the primary metric because the classes are heavily imbalanced.
 ## Tech Stack
 *   **Language:** Python 3.13
 *   **Text representations:**
-    *   **TF-IDF (scikit-learn):** Word-level unigrams and bigrams + character n-grams
+    *   **TF-IDF (scikit-learn):** Optuna selects between word-level unigrams/bigrams and character n-grams (`analyzer="char_wb"`), sparse features.
     *   **fastText:** Pretrained Czech 300-dimensional embeddings (`cc.cs.300.bin`), averaged into one document vector.
     *   **Transformers:** Two Czech encoders tried, both fine-tuned end to end (all parameters trainable):
         *   **RobeCzech (`ufal/robeczech-base`):** Czech RoBERTa. Selected for final results.
@@ -59,7 +59,7 @@ pip install -e .
 
 ### Data preparation
 
-The raw dataset is not included in this repository, as the source cannot be disclosed. Place the raw dataset into `data/` (kept out of git). The `data_prep.ipynb` notebook cleans it and writes `data/clean.parquet`, which every training script reads.
+The raw dataset is not included in this repository, as the source cannot be disclosed. Place the raw dataset into `data/` (kept out of git). The `data_prep.ipynb` notebook cleans it and writes `data/clean.parquet`, which every training script reads and uses.
 
 The Czech fastText model needs to be downloaded separately (~7 GB):
 
@@ -92,18 +92,16 @@ python scripts/finalize_embeddings.py
 
 **Fine-tuned transformer**
 
-Two encoders were tried in the reported experiments: `ufal/robeczech-base` (selected) and `Seznam/small-e-czech` (dropped at 0.63 validation macro-F1). Substitute either for `<MODEL_NAME>`.
+The reported results use `ufal/robeczech-base`. `Seznam/small-e-czech` was also tried but dropped at 0.63 validation macro-F1. The `--model-name` argument accepts any Hugging Face model identifier compatible with `AutoModelForSequenceClassification`.
 
 ```bash
-python scripts/tune_transformer.py --model-name <MODEL_NAME> --n-trials N_TRIALS
-python scripts/run_transformer.py --model-name <MODEL_NAME> --run-name tuned \
+python scripts/tune_transformer.py --model-name ufal/robeczech-base --n-trials N_TRIALS
+python scripts/run_transformer.py --model-name ufal/robeczech-base --run-name tuned \
     --lr <LR> --batch-size <BATCH_SIZE> --weight-decay <WEIGHT_DECAY> --label-smoothing <LABEL_SMOOTHING>
-python scripts/finalize_transformer.py --model-dir <RESULTS_DIR>
+python scripts/finalize_transformer.py --model-dir results/transformer/ufal_robeczech-base__tuned/best
 ```
 
-Replace `<LR>`, `<BATCH_SIZE>`, `<WEIGHT_DECAY>` and `<LABEL_SMOOTHING>` with the winning row from  
-`results/transformer/<model-name>_optuna_trials.csv` (slashes in the model name replaced with underscores). `<RESULTS_DIR>` is the path to the `best/` subfolder of the tuned run, e.g. `results/transformer/ufal_robeczech-base__tuned/best`.
-
+Replace `<LR>`, `<BATCH_SIZE>`, `<WEIGHT_DECAY>` and `<LABEL_SMOOTHING>` with the winning row from `results/transformer/ufal_robeczech-base_optuna_trials.csv`.
 ### Results analysis
 
 Once all three finalize scripts have run, open `notebooks/results_analysis.ipynb` for the final comparison table, confusion matrices, per-class F1 and error analysis.
@@ -125,10 +123,12 @@ The work is organized as follows:
    * **embeddings.py** - fastText representation and its Optuna objective
    * **transformer.py** - Dataset, metrics, weighted trainer, Optuna objective
    * **evaluate.py** - Shared metric and reporting helpers
- * **/scripts** - Entry points, one concern each
+ * **/scripts** - Entry points for experiments
    * **run_traditional.py** - Optuna search over TF-IDF classifiers
    * **run_embeddings.py** - Optuna search over fastText classifiers
-   * **run_transformer.py** - Single transformer fine-tuning run
    * **tune_transformer.py** - Optuna search over transformer fine-tuning hyperparameters
-   * **finalize_*.py** - Refit the winning configuration and score it on the test split
- * **/results** - Metrics, predictions and figures (versioned); trained model weights are not included due to size
+   * **run_transformer.py** - Single transformer fine-tuning run (based on the winner combination)
+   * **finalize_traditional.py** - Refits the winning TF-IDF configuration on train+val and evaluates it on the test split
+   * **finalize_embeddings.py** - Refits the winning fastText classifier on train+val and evaluates it on the test split
+   * **finalize_transformer.py** - Loads the fine-tuned transformer from `--model-dir` and evaluates it on the test split
+ * **/results** - Metrics, predictions and figures. Trained model weights are **not included in git** due to size and to avoid disclosing any data information.
