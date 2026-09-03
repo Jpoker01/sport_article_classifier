@@ -44,7 +44,7 @@ All code was executed on the MetaCentrum Jupyter environment:
 - **Disk:** ~30 GB free
 
 Minimum:
-- **CPU-only (TF-IDF and fastText paths):** 8 GB RAM, 10 GB free disk. The fastText binary alone occupies ~7 GB in memory once loaded.
+- **CPU-only (TF-IDF and fastText paths):** 8 GB RAM, 15 GB free disk. The fastText binary alone occupies ~7 GB in memory once loaded.
 - **GPU (transformer path):** NVIDIA GPU with at least 16 GB VRAM for training at batch size 16 in mixed precision. Inference alone runs comfortably on 8 GB VRAM. Training on CPU is possible but not practical (multiple hours per epoch).
 
 ### Setup
