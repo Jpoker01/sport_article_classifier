@@ -55,8 +55,8 @@ def main():
     }).to_csv(RESULTS_PATH / "traditional_test_predictions.csv", index=False)
 
     joblib.dump(
-    {"scaler": scaler, "classifier": classifier, "encoder": encoder},
-    RESULTS_PATH / "embeddings_model.joblib",
+    {"vectorizer": vectorizer, "classifier": classifier, "encoder": encoder},
+    RESULTS_PATH / "traditional_model.joblib",
     )
 
 if __name__ == "__main__":
