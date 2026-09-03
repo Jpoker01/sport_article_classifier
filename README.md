@@ -4,6 +4,7 @@ This project classifies Czech sport news articles into multiple sport categories
 * TF-IDF with classical classifiers
 * Pretrained fastText embeddings with the same classifier family
 * Fine-tuned Czech transformer.
+  
 All hyperparameters are tuned with Optuna against validation macro-F1.  
 
 ## Results
