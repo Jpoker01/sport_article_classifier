@@ -1,8 +1,8 @@
 # Czech Sport Article Classifier
 
 This project classifies Czech sport news articles into multiple sport categories based on the article title and perex. Three approaches are compared: 
-* TF-IDF with classical classifiers
-* Pretrained fastText embeddings with the same classifier family
+* TF-IDF with classical classifiers.
+* Pretrained fastText embeddings with the same classifier family.
 * Fine-tuned Czech transformer.
   
 All hyperparameters are tuned with Optuna against validation macro-F1.  
@@ -11,7 +11,7 @@ All hyperparameters are tuned with Optuna against validation macro-F1.
 
 | Method | Macro-F1   | Accuracy   | Inference (ms/sample) | Model size |
 |--------|------------|------------|-----------------------|------------|
-| TF-IDF + LinearSVC | 0.9183     | 0.9846     | 0.04 | 11 MB |
+| XXXX | XXXX     | XXXX     | XXXX | XXXX |
 | fastText + XGBoost | 0.8024     | 0.9644     | 0.16 | ~7 GB |
 | RobeCzech, fine-tuned | **0.9711** | **0.9913** | 3.41 | 484 MB |
 
@@ -25,7 +25,7 @@ Macro-F1 is the primary metric because the classes are heavily imbalanced.
     *   **Transformers:** Two Czech encoders tried, both fine-tuned end to end (all parameters trainable):
         *   **RobeCzech (`ufal/robeczech-base`):** Czech RoBERTa. Selected for final results.
         *   **Small-E-Czech (`Seznam/small-e-czech`):** Czech ELECTRA. Tried and dropped after reaching only 0.63 validation macro-F1 with the same recipe.  
-*   **Classifiers:** scikit-learn classifiers such as LogisticRegression, LinearSVC, MultinomialNB, ComplementNB, RandomForest and then XGBoost.
+*   **Classifiers:** scikit-learn classifiers such as LogisticRegression, LinearSVC, MultinomialNB, ComplementNB, RandomForest and XGBoost.
 *   **Hyperparameter tuning:** Optuna, per-classifier studies, macro-F1 as the objective.
 *   **Environment:** Jupyter for analysis and results, PyCharm for development.
 
@@ -70,11 +70,11 @@ gunzip data/cc.cs.300.bin.gz
 ```
 Notebook order:
 1. `notebooks/data_analysis.ipynb` - exploratory analysis of the raw dataset.
-2. `notebooks/data_prep.ipynb` - cleaning, deduplication, stratified 70/15/15 split, fastText download.
+2. `notebooks/data_prep.ipynb` - cleaning, deduplication, stratified 70/15/15 split.
 
 ### Running the experiments
 
-Each Optuna study runs `N_TRIALS` trials per classifier (or per configuration for the transformer). Higher values explore the hyperparameter space more thoroughly at proportional cost. Reported numbers use **50** trials per classifier for all methods.
+Each Optuna study runs `N_TRIALS` trials per classifier (or per configuration for the transformer). Higher values explore the hyperparameter space more thoroughly at proportional cost. Reported numbers use 50 trials per classifier for TF-IDF and fastText, and 38 trials for the transformer (limited by time and memory constraints).
 
 **Substitute `N_TRIALS` with the value you want to use.**
 
@@ -110,7 +110,7 @@ Once all three finalize scripts have run, open `notebooks/results_analysis.ipynb
 
 The work is organized as follows:
 
-  * **pyproject.toml** - Dependencies and package configuration for `pip install -e .`
+ * **pyproject.toml** - Dependencies and package configuration for `pip install -e .`
  * **/data** - Raw and processed datasets - **not included in git**
  * **/notebooks** - Jupyter notebooks
    * **data_analysis.ipynb** - Exploratory analysis of the raw dataset
