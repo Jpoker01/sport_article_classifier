@@ -11,9 +11,9 @@ All hyperparameters are tuned with Optuna against validation macro-F1.
 
 | Method | Macro-F1   | Accuracy   | Inference (ms/sample) | Model size |
 |--------|------------|------------|-----------------------|------------|
-| TF-IDF + Logistic Regression |   0.9330  |  0.9862     | 3.643 | 21 MB |
-| fastText + XGBoost | 0.8024     | 0.9644     | 0.16 | ~7 GB |
-| RobeCzech, fine-tuned | **0.9711** | **0.9913** | 3.41 | 484 MB |
+| TF-IDF + Logistic Regression |   0.9330  |  0.9862     | 0.3502 | 21 MB |
+| fastText + XGBoost | 0.8024     | 0.9644     | 0.1464 | ~7 GB |
+| RobeCzech, fine-tuned | **0.9711** | **0.9913** | 3.5185 | 484 MB |
 
 Macro-F1 is the primary metric because the classes are heavily imbalanced.
 
