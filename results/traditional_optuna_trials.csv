@@ -1,0 +1,2 @@
+,best_val_macro_f1,tfidf_analyzer,tfidf_char_ngram_max,tfidf_max_features,tfidf_min_df,tfidf_sublinear_tf,C
+logreg,0.9619063916169767,char_wb,5,100000,4,False,35.255114990241985

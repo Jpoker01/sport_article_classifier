@@ -1,0 +1,5 @@
+,best_val_macro_f1,C,loss,n_estimators,max_depth,max_features,min_samples_leaf,learning_rate,subsample,colsample_bytree,reg_lambda,min_child_weight
+xgboost,0.8895242713702045,,,593.0,5.0,,,0.08708955721381574,0.6685265962117722,0.9313804621145583,3.533215052610578,7.0
+linear_svc,0.8719572799903167,0.04189283565925376,squared_hinge,,,,,,,,,
+logreg,0.8465751736275832,0.26053834077897625,,,,,,,,,,
+random_forest,0.8107254014167359,,,382,32,sqrt,7,,,,,
