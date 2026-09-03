@@ -20,7 +20,7 @@ Macro-F1 is the primary metric because the classes are heavily imbalanced.
 ## Tech Stack
 *   **Language:** Python 3.13
 *   **Text representations:**
-    *   **TF-IDF (scikit-learn):** Word-level unigrams and bigrams, sparse features.
+    *   **TF-IDF (scikit-learn):** Word-level unigrams and bigrams + character n-grams
     *   **fastText:** Pretrained Czech 300-dimensional embeddings (`cc.cs.300.bin`), averaged into one document vector.
     *   **Transformers:** Two Czech encoders tried, both fine-tuned end to end (all parameters trainable):
         *   **RobeCzech (`ufal/robeczech-base`):** Czech RoBERTa. Selected for final results.
@@ -37,7 +37,11 @@ Macro-F1 is the primary metric because the classes are heavily imbalanced.
 - Linux, macOS or WSL2 on Windows
 
 ### Hardware requirements
-All of the code executed on: NVIDIA A40 (48 GB VRAM), 16 CPU cores, 64 GB RAM, ~30 GB free disk space (MetaCentrum Jupyter environment).
+All code was executed on the MetaCentrum Jupyter environment:
+- **GPU:** NVIDIA A40 (48 GB VRAM)
+- **CPU:** 16 cores
+- **RAM:** 64 GB
+- **Disk:** ~30 GB free
 
 Minimum:
 - **CPU-only (TF-IDF and fastText paths):** 8 GB RAM, 10 GB free disk. The fastText binary alone occupies ~7 GB in memory once loaded.
