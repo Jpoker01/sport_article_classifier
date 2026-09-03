@@ -1,9 +1,0 @@
-name: sport-article-classifier
-channels:
-  - conda-forge
-dependencies:
-  - python=3.13
-  - pip
-  - cxx-compiler        # fasttext se builduje ze zdrojáku
-  - pip:
-      - -e .
