@@ -128,7 +128,7 @@ The work is organized as follows:
    * **run_embeddings.py** - Optuna search over fastText classifiers
    * **tune_transformer.py** - Optuna search over transformer fine-tuning hyperparameters
    * **run_transformer.py** - Single transformer fine-tuning run (based on the winner combination)
-   * **finalize_traditional.py** - Refits the winning TF-IDF configuration on train+val and evaluates it on the test split
-   * **finalize_embeddings.py** - Refits the winning fastText classifier on train+val and evaluates it on the test split
+   * **finalize_traditional.py** - Refits the winning TF-IDF configuration on train data and evaluates it on the test split
+   * **finalize_embeddings.py** - Refits the winning fastText classifier on train data and evaluates it on the test split
    * **finalize_transformer.py** - Loads the fine-tuned transformer from `--model-dir` and evaluates it on the test split
  * **/results** - Metrics, predictions and figures. Trained model weights are **not included in git** due to size and to avoid disclosing any data information.
