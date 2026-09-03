@@ -44,7 +44,8 @@ def objective(trial, config, train_texts, y_train, val_texts, y_val):
     Returns:
         Macro-F1 on the validation data.
     """
- 
+
+    #character n-grams sampled only for classifiers whose config allows them 
     analyzer = "word"
     if config.allows_char_ngrams:
         analyzer = trial.suggest_categorical("tfidf_analyzer", ["word", "char_wb"])

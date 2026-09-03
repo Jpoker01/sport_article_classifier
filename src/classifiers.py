@@ -19,11 +19,7 @@ class ClassifierConfig:
         classifier_object: classifier class
         searched_hyperparameters: Maps a parameter name to a callable that samples it from an Optuna trial.
         fixed_hyperparameters: Parameters passed unchanged on every build.
-        allows_char_ngrams: Whether the TF-IDF search space may offer this
-            classifier character n-grams. A character n-gram document has
-            roughly an order of magnitude more non-zero features than a word
-            one, which linear models and naive Bayes absorb but boosting over
-            23 classes and hundreds of trees does not within a usable budget.
+        allows_char_ngrams: Whether this classifier may be offered character n-grams. Tree ensembles are excluded, the denser matrix makes them too slow.
     """
     classifier_object: type
     searched_hyperparameters: dict = field(default_factory=dict)

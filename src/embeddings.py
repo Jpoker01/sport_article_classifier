@@ -5,9 +5,7 @@ from sklearn.metrics import f1_score
 
 from src.classifiers import CLASSIFIER_CONFIGS
 
-# Naive Bayes needs non-negative features but fastText vectors contain
-# negative values, so both NB variants are dropped. A comprehension is used
-# instead of deleting keys so the shared CLASSIFIER_CONFIGS stays intact.
+# A comprehension is used instead of deleting keys so the shared CLASSIFIER_CONFIGS stays intact
 EMBEDDING_CONFIGS = {k: v for k, v in CLASSIFIER_CONFIGS.items()
                      if k not in ("multinomial_nb", "complement_nb")}
 

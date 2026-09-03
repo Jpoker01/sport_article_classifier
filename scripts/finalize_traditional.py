@@ -20,9 +20,7 @@ def main():
     classifier_params = {key: value
                   for key, value in params.items() if not key.startswith("tfidf_")}
  
-    # The search space stores the upper bound only; rebuild the tuple. Which
-    # bound was sampled depends on the analyzer, and a trial recorded before
-    # the analyzer was searched carries neither key and is word-level.
+    # Rebuild ngram_range, the search space stores one bound and which one depends on the analyzer."
     if "char_ngram_max" in tfidf_params:
         tfidf_params["ngram_range"] = (3, tfidf_params.pop("char_ngram_max"))
     elif "ngram_max" in tfidf_params:
