@@ -1,6 +1,7 @@
 """Rebuild the best fastText trial on the training split and evaluate it on test."""
 import pandas as pd
 from sklearn.preprocessing import LabelEncoder, StandardScaler
+import joblib
 
 from src.classifiers import CLASSIFIER_CONFIGS, load_best_trial
 from src.config import CLEAN_DATA_PATH, FASTTEXT_MODEL_PATH, RESULTS_PATH
@@ -48,6 +49,11 @@ def main():
     }).to_csv(predictions_path, index=False)
     print(f"\nSaved: {metrics_path}")
     print(f"Saved: {predictions_path}")
+
+    joblib.dump(
+    {"vectorizer": vectorizer, "classifier": classifier, "encoder": encoder},
+    RESULTS_PATH / "traditional_model.joblib",
+    )
 
 if __name__ == "__main__":
     main()

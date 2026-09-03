@@ -1,6 +1,7 @@
 """Rebuild the best TF-IDF trial on the training split and evaluate it on test."""
 import pandas as pd
 from sklearn.preprocessing import LabelEncoder
+import joblib
 
 from src.classifiers import CLASSIFIER_CONFIGS, load_best_trial
 from src.config import CLEAN_DATA_PATH, RESULTS_PATH, ROOT
@@ -53,6 +54,10 @@ def main():
         "pred": encoder.inverse_transform(y_pred),
     }).to_csv(RESULTS_PATH / "traditional_test_predictions.csv", index=False)
 
+    joblib.dump(
+    {"scaler": scaler, "classifier": classifier, "encoder": encoder},
+    RESULTS_PATH / "embeddings_model.joblib",
+    )
 
 if __name__ == "__main__":
     main()
