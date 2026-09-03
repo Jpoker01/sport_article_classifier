@@ -52,10 +52,11 @@ Minimum:
 
 ```bash
 git clone https://github.com/Jpoker01/sport_article_classifier.git
-cd sport_article_classifier
-python -m venv .venv
-source .venv/bin/activate
-pip install -e .
+   cd sport_article_classifier
+   python -m venv .venv
+   source .venv/bin/activate
+   pip install -e .
+   python -m ipykernel install --user --name sport-classifier --display-name "Python (sport-classifier)"
 ```
 
 ### Data preparation
