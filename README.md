@@ -50,14 +50,32 @@ Minimum:
 
 ### Setup
 
+The project installs as an editable package, which registers `src/` on the import
+path (so `from src.config import ...` works from anywhere) and pulls in all
+dependencies from `pyproject.toml`.
+
+**Cloud Jupyter (e.g. MetaCentrum), installing into the active environment:**
+
 ```bash
 git clone https://github.com/Jpoker01/sport_article_classifier.git
 cd sport_article_classifier
+pip install -e .
+```
+
+The notebooks then run under the environment's default kernel, no extra kernel
+registration needed.
+
+**Optional, isolated virtual environment:**
+
+```bash
 python -m venv .venv
 source .venv/bin/activate
 pip install -e .
 python -m ipykernel install --user --name sport-classifier --display-name "Python (sport-classifier)"
 ```
+
+When using the venv, select the **Python (sport-classifier)** kernel in each
+notebook before running the cells.
 
 ### Data preparation
 
