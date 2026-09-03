@@ -9,7 +9,7 @@ All hyperparameters are tuned with Optuna against validation macro-F1.
 
 ## Results
 
-| Method | Macro-F1   | Accuracy   | inference (ms/sample) | model size |
+| Method | Macro-F1   | Accuracy   | Inference (ms/sample) | Model size |
 |--------|------------|------------|-----------------------|------------|
 | TF-IDF + LinearSVC | 0.9183     | 0.9846     | 0.04 | 11 MB |
 | fastText + XGBoost | 0.8024     | 0.9644     | 0.16 | ~7 GB |
