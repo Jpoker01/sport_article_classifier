@@ -1,6 +1,6 @@
 # Czech Sport Article Classifier
 
-This project classifies Czech sport news articles into 23 sport categories based on the article title and perex. Three approaches are compared: TF-IDF with classical classifiers, pretrained fastText embeddings with the same classifier family, and a fine-tuned Czech transformer. All hyperparameters are tuned with Optuna against validation macro-F1.  
+This project classifies Czech sport news articles into multiple sport categories based on the article title and perex. Three approaches are compared: TF-IDF with classical classifiers, pretrained fastText embeddings with the same classifier family, and a fine-tuned Czech transformer. All hyperparameters are tuned with Optuna against validation macro-F1.  
 
 ## Results
 
