@@ -70,7 +70,7 @@ gunzip data/cc.cs.300.bin.gz
 ```
 Notebook order:
 1. `notebooks/data_analysis.ipynb` - exploratory analysis of the raw dataset.
-2. `notebooks/data_prep.ipynb` - cleaning, deduplication, stratified 70/15/15 split.
+2. `notebooks/data_prep.ipynb` - cleaning, deduplication, stratified 80/10/10 split.
 
 ### Running the experiments
 
