@@ -2,34 +2,40 @@
 from dataclasses import dataclass, field
 from ast import literal_eval
 import pandas as pd
-
+ 
 from sklearn.linear_model import LogisticRegression
 from sklearn.svm import LinearSVC
 from sklearn.naive_bayes import MultinomialNB, ComplementNB #complementNB added as it is preferred for imbalanced datasets
 from sklearn.ensemble import RandomForestClassifier
 from xgboost import XGBClassifier
-
+ 
 from src.config import SEED, DEVICE
-
+ 
 @dataclass
 class ClassifierConfig:
     """Wraps a classifier class together with its Optuna search space.
-
+ 
     Attributes:
         classifier_object: classifier class
         searched_hyperparameters: Maps a parameter name to a callable that samples it from an Optuna trial.
         fixed_hyperparameters: Parameters passed unchanged on every build.
+        allows_char_ngrams: Whether the TF-IDF search space may offer this
+            classifier character n-grams. A character n-gram document has
+            roughly an order of magnitude more non-zero features than a word
+            one, which linear models and naive Bayes absorb but boosting over
+            23 classes and hundreds of trees does not within a usable budget.
     """
     classifier_object: type
     searched_hyperparameters: dict = field(default_factory=dict)
     fixed_hyperparameters: dict = field(default_factory=dict)
-
+    allows_char_ngrams: bool = False
+ 
     def sample(self, trial):
         """Draw one set of hyperparameters from the search space.
-
+ 
         Args:
             trial: Optuna trial used to sample each searched parameter.
-
+ 
         Returns:
             Dict mapping parameter names to the sampled values.
         """
@@ -37,20 +43,20 @@ class ClassifierConfig:
             name: suggest(trial)
             for name, suggest in self.searched_hyperparameters.items()
         }
-
+ 
     def build(self, params):
         """Instantiate the classifier from given params plus the fixed ones.
-
+ 
         Args:
             params: Hyperparameters to pass to the classifier, either from
             `sample()` during tuning or parsed from a trials CSV during
             finalization.
-
+ 
         Returns:
             An unfitted classifier instance.
         """
         return self.classifier_object(**params, **self.fixed_hyperparameters)
-
+ 
 CLASSIFIER_CONFIGS = {
     "logreg": ClassifierConfig(
         classifier_object=LogisticRegression,
@@ -60,6 +66,7 @@ CLASSIFIER_CONFIGS = {
         fixed_hyperparameters={
             "class_weight": "balanced", "max_iter": 1000, "random_state": SEED,
         },
+        allows_char_ngrams=True,
     ),
     "linear_svc": ClassifierConfig(
         classifier_object=LinearSVC,
@@ -70,6 +77,7 @@ CLASSIFIER_CONFIGS = {
         fixed_hyperparameters={
             "class_weight": "balanced", "max_iter": 5000, "random_state": SEED,
         },
+        allows_char_ngrams=True,
     ),
     "multinomial_nb": ClassifierConfig(
         classifier_object=MultinomialNB,
@@ -77,6 +85,7 @@ CLASSIFIER_CONFIGS = {
             "alpha": lambda t: t.suggest_float("alpha", 1e-3, 10.0, log=True),
             "fit_prior": lambda t: t.suggest_categorical("fit_prior", [True, False]),
         },
+        allows_char_ngrams=True,
     ),
     "complement_nb": ClassifierConfig(
         classifier_object=ComplementNB,
@@ -85,6 +94,7 @@ CLASSIFIER_CONFIGS = {
             "fit_prior": lambda t: t.suggest_categorical("fit_prior", [True, False]),
             "norm": lambda t: t.suggest_categorical("norm", [True, False]),
         },
+        allows_char_ngrams=True,
     ),
     "random_forest": ClassifierConfig(
         classifier_object=RandomForestClassifier,
@@ -115,14 +125,14 @@ CLASSIFIER_CONFIGS = {
         },
     ),
 }
-
-
+ 
+ 
 def parse_value(value):
     """Turn a CSV cell back into its Python type; leave plain strings as-is.
-
+ 
     Args:
         value: Cell value read from a trials CSV.
-
+ 
     Returns:
         The value as bool, int, float or str. Whole-number floats are
         downcast to int because pandas widens integer columns to float64
@@ -138,15 +148,15 @@ def parse_value(value):
     if isinstance(parsed, float) and parsed.is_integer():
         return int(parsed)
     return parsed
-
+ 
 def load_best_trial(trials_path, metric_column="best_val_macro_f1") -> tuple:
     """Return the best-scoring trial recorded in an Optuna trials CSV.
-
+ 
     Args:
         trials_path: Path to a CSV whose index is the classifier name and
         whose columns hold the metric plus sampled hyperparameters.
         metric_column: Column to rank trials by, higher is better.
-
+ 
     Returns:
         Tuple of (classifier name, metric value, hyperparameter dict).
         NaN columns are dropped from the dict because different
@@ -160,5 +170,5 @@ def load_best_trial(trials_path, metric_column="best_val_macro_f1") -> tuple:
         if column != metric_column and not pd.isna(value)
     }
     return row.name, row[metric_column], params
-
+ 
 
