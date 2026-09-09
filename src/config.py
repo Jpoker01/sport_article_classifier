@@ -21,6 +21,10 @@ RESULTS_PATH = ROOT / "results"
 VAL_SIZE = 0.1
 TEST_SIZE = 0.1
 
+#Weighting
+CLASS_WEIGHT_BETA = 0.5
+CLASS_WEIGHT_CAP = 8.0
+
 # Evaluation
 PRIMARY_METRIC = "macro_f1"
 
