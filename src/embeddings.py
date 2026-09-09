@@ -1,6 +1,5 @@
 """fastText embeddings as a fixed representation for the classic classifiers."""
 import numpy as np
-import fasttext
 from sklearn.metrics import f1_score
 
 from src.classifiers import CLASSIFIER_CONFIGS
@@ -9,9 +8,41 @@ from src.classifiers import CLASSIFIER_CONFIGS
 EMBEDDING_CONFIGS = {k: v for k, v in CLASSIFIER_CONFIGS.items()
                      if k not in ("multinomial_nb", "complement_nb")}
 
+_FASTTEXT_MISSING_MESSAGE = (
+    "The fastText embedding pipeline requires the 'fasttext' package, which is not installed.\n"
+    "It is an optional dependency because PyPI ships no usable prebuilt wheels for it.\n"
+    "\n"
+    "  pip install -e .[fasttext]\n"
+    "\n"
+    "That compiles fastText from source and therefore needs a C++ toolchain:\n"
+    "  Linux   - sudo apt install build-essential python3-dev\n"
+    "  macOS   - xcode-select --install\n"
+    "  Windows - Visual C++ Build Tools, or use WSL2\n"
+    "\n"
+    "If no compiler is available, prebuilt wheels exist for Python 3.12 and older:\n"
+    "  pip install fasttext-wheel==0.9.2\n"
+    "\n"
+    "The TF-IDF and transformer pipelines do not need fastText and run without it."
+)
+
+
+def _import_fasttext():
+    """Import fasttext on first use and turn a missing install into an actionable error.
+
+    The import is deferred so that importing this module (and therefore running the
+    TF-IDF or transformer pipelines) does not fail when the optional fastText
+    dependency is absent.
+    """
+    try:
+        import fasttext
+    except ImportError as exc:
+        raise ImportError(_FASTTEXT_MISSING_MESSAGE) from exc
+    return fasttext
+
 
 def load_fasttext(model_path):
     """Load a pretrained fastText model"""
+    fasttext = _import_fasttext()
     return fasttext.load_model((str(model_path))) # fasttext.load_model can accept only strings - not Path objects
 
 def embed_documents(texts, model):
