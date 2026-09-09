@@ -28,7 +28,7 @@ def embed_documents(texts, kv):
         vectors.append(vec)
     return np.vstack(vectors)
 
-def objective(trial, config, X_train, y_train, X_val, y_val):
+def objective(trial, config, X_train, y_train, X_val, y_val, class_weight=None):
     """Sample classifier hyperparameters, fit on fixed embeddings, scored on validation set.
 
     Args:

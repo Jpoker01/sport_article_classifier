@@ -40,16 +40,16 @@ class ClassifierConfig:
             for name, suggest in self.searched_hyperparameters.items()
         }
  
-    def build(self, params):
+    def build(self, params, class_weight=None):
         """Instantiate the classifier from given params plus the fixed ones.
  
         Args:
             params: Hyperparameters to pass to the classifier, either from
             `sample()` during tuning or parsed from a trials CSV during
             finalization.
-             class_weight: Optional {label: weight} dict replacing the classifier's default `class_weight` 
-             where supported (LogisticRegression, LinearSVC, RandomForest). 
-             Silently ignored for classifiers without a `class_weight` parameter.
+            class_weight: Optional {label: weight} dict replacing the classifier's default `class_weight` 
+            where supported (LogisticRegression, LinearSVC, RandomForest). 
+            Silently ignored for classifiers without a `class_weight` parameter.
         Returns:
             An unfitted classifier instance.
         """

@@ -30,7 +30,7 @@ def build_tfidf_vectorizer(max_features, min_df, ngram_range=(1, 2),
         sublinear_tf=sublinear_tf
     )
  
-def objective(trial, config, train_texts, y_train, val_texts, y_val):
+def objective(trial, config, train_texts, y_train, val_texts, y_val, class_weight=None):
     """Sample vectorizer and classifier hyperparameters, fit, and use validation set to score.
  
     Args:

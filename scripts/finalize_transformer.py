@@ -53,8 +53,8 @@ def main():
     with torch.no_grad():
         for batch in loader:
             logits = model(
-                input_ids=batch["input_ids"].to(device),
-                attention_mask=batch["attention_mask"].to(device),
+            input_ids=batch["input_ids"].to(DEVICE),
+            attention_mask=batch["attention_mask"].to(DEVICE),
             ).logits
             predictions.extend(logits.argmax(dim=-1).cpu().numpy().tolist())
     elapsed = time.time() - start
