@@ -7,7 +7,6 @@ import numpy as np
 import pandas as pd
 import torch
 from sklearn.preprocessing import LabelEncoder
-from sklearn.utils.class_weight import compute_class_weight
 from transformers import (
     AutoModelForSequenceClassification,
     AutoTokenizer,
@@ -28,8 +27,13 @@ from src.config import (
     TRANSFORMER_WEIGHT_DECAY,
 )
 
-from src.transformer import TextClassificationDataset, WeightedTrainer, compute_metrics
-
+from src.transformer import (
+    TextClassificationDataset,
+    WeightedTrainer,
+    compute_capped_class_weight,
+    compute_metrics,
+)
+ 
 def parse_args():
     """Parse command line arguments.
 
@@ -72,7 +76,7 @@ def main():
     num_labels = len(encoder.classes_)
     
     class_weights = torch.tensor(
-        compute_class_weight("balanced", classes=np.arange(num_labels), y=y_train),
+        compute_capped_class_weight(y_train, num_labels),
         dtype=torch.float,
     )
     
@@ -114,7 +118,7 @@ def main():
         seed=SEED,
         save_total_limit=2,
     )
-
+ 
     trainer = WeightedTrainer(
         model=model,
         args=training_args,
@@ -125,25 +129,25 @@ def main():
         callbacks=callbacks,
     )
     trainer.train()
-
+ 
     eval_logs = [log for log in trainer.state.log_history
                  if f"eval_{PRIMARY_METRIC}" in log]
     best_log = max(eval_logs, key=lambda log: log[f"eval_{PRIMARY_METRIC}"])
     best_metrics = {key.removeprefix("eval_"): value
                     for key, value in best_log.items()
                     if key.startswith("eval_")}
-
+ 
     metrics_path = out_dir / "val_metrics.csv"
     pd.DataFrame([best_metrics]).to_csv(metrics_path, index=False)
     print(f"best val {PRIMARY_METRIC}: {best_metrics[PRIMARY_METRIC]:.4f}")
     print(f"Saved: {metrics_path}")
-
+ 
     if not args.no_save:
         best_dir = out_dir / "best"
         trainer.save_model(str(best_dir))
         tokenizer.save_pretrained(str(best_dir))
         np.save(out_dir / "label_classes.npy", encoder.classes_)
         print(f"Saved: {best_dir}")
-
+ 
 if __name__ == "__main__":
     main()

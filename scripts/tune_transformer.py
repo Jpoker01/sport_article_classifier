@@ -7,7 +7,6 @@ import optuna
 import pandas as pd
 import torch
 from sklearn.preprocessing import LabelEncoder
-from sklearn.utils.class_weight import compute_class_weight
 
 from src.config import (
     CLEAN_DATA_PATH,
@@ -17,7 +16,8 @@ from src.config import (
     TRANSFORMER_EPOCHS,
     TRANSFORMER_MAX_LENGTH,
 )
-from src.transformer import objective
+
+from src.transformer import compute_capped_class_weight, objective
 
 def parse_args():
     """Parse command line arguments.
@@ -71,7 +71,7 @@ def main():
     y_val = encoder.transform(val["category"])
 
     class_weights = torch.tensor(
-        compute_class_weight("balanced", classes=np.arange(num_labels), y=y_train),
+        compute_capped_class_weight(y_train, num_labels),
         dtype=torch.float,
     )
 
