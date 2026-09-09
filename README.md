@@ -83,37 +83,6 @@ notebook before running the cells.
 This base install is enough for the TF-IDF pipeline, the transformer pipeline and
 all three notebooks. It needs no compiler and works on Linux, macOS and Windows.
 
-#### Optional: the fastText pipeline
-
-fastText is an *extra*, not a base dependency. PyPI publishes exactly one wheel for
-`fasttext==0.9.3` (CPython 3.9, macOS arm64), so on every other platform pip compiles
-it from source. If that build fails and fastText is a base dependency, pip aborts the
-whole transaction and the environment ends up with **nothing** installed, not even
-pandas or scikit-learn. Keeping it in an extra confines that failure to the one
-pipeline that actually needs it.
-
-```bash
-pip install -e ".[fasttext]"
-```
-
-This requires a C++ toolchain:
-
-| Platform | Prerequisite |
-|----------|--------------|
-| Linux    | `sudo apt install build-essential python3-dev` |
-| macOS    | `xcode-select --install` |
-| Windows  | Visual C++ Build Tools, or run the project under WSL2 |
-
-Without a compiler, prebuilt wheels are available for Python 3.12 and older:
-
-```bash
-pip install fasttext-wheel==0.9.2
-```
-
-`src/embeddings.py` imports fastText lazily, so if it is missing the TF-IDF and
-transformer paths still run and only `load_fasttext` raises, with the install
-instructions in the error message.
-
 ### Data preparation
 
 The raw dataset is not included in this repository, as the source cannot be disclosed. Place the raw dataset into `data/` (kept out of git). The `data_prep.ipynb` notebook cleans it and writes `data/clean.parquet`, which every training script reads and uses.
