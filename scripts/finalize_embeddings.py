@@ -7,6 +7,7 @@ from src.classifiers import CLASSIFIER_CONFIGS, load_best_trial
 from src.config import CLEAN_DATA_PATH, FASTTEXT_MODEL_PATH, RESULTS_PATH
 from src.embeddings import embed_documents, load_fasttext
 from src.evaluate import evaluate, full_report
+from src.weighting import capped_class_weight_dict
 
 def main():
     """Refit the winning classifier on fastText embeddings and score it on test."""
@@ -21,6 +22,7 @@ def main():
     encoder = LabelEncoder().fit(df["category"])
     y_train = encoder.transform(train["category"])
     y_test = encoder.transform(test["category"])
+    class_weight = capped_class_weight_dict(y_train, len(encoder.classes_))
 
     # Fixed representation: load fastText, embed once, standardize (fit on train only).
     model = load_fasttext(FASTTEXT_MODEL_PATH)
@@ -31,7 +33,7 @@ def main():
     X_train = scaler.transform(X_train)
     X_test = scaler.transform(X_test)
 
-    classifier = CLASSIFIER_CONFIGS[name].build(params)
+    classifier = CLASSIFIER_CONFIGS[name].build(params, class_weight=class_weight)
     classifier.fit(X_train, y_train)
     y_pred = classifier.predict(X_test)
 
