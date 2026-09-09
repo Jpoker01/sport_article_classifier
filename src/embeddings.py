@@ -8,35 +8,14 @@ from src.classifiers import CLASSIFIER_CONFIGS
 EMBEDDING_CONFIGS = {k: v for k, v in CLASSIFIER_CONFIGS.items()
                      if k not in ("multinomial_nb", "complement_nb")}
 
-_FASTTEXT_MISSING_MESSAGE = (
-    "The fastText embedding pipeline requires the 'fasttext' package, which is not installed.\n"
-    "It is an optional dependency because PyPI ships no usable prebuilt wheels for it.\n"
-    "\n"
-    "  pip install -e .[fasttext]\n"
-    "\n"
-    "That compiles fastText from source and therefore needs a C++ toolchain:\n"
-    "  Linux   - sudo apt install build-essential python3-dev\n"
-    "  macOS   - xcode-select --install\n"
-    "  Windows - Visual C++ Build Tools, or use WSL2\n"
-    "\n"
-    "If no compiler is available, prebuilt wheels exist for Python 3.12 and older:\n"
-    "  pip install fasttext-wheel==0.9.2\n"
-    "\n"
-    "The TF-IDF and transformer pipelines do not need fastText and run without it."
-)
-
-
 def _import_fasttext():
-    """Import fasttext on first use and turn a missing install into an actionable error.
-
-    The import is deferred so that importing this module (and therefore running the
-    TF-IDF or transformer pipelines) does not fail when the optional fastText
-    dependency is absent.
-    """
+    """Import fasttext lazily so the TF-IDF and transformer pipelines run without it."""
     try:
         import fasttext
     except ImportError as exc:
-        raise ImportError(_FASTTEXT_MISSING_MESSAGE) from exc
+        raise ImportError(
+            "fastText is optional. Install with: pip install -e .[fasttext]"
+        ) from exc
     return fasttext
 
 
@@ -74,11 +53,14 @@ def objective(trial, config, X_train, y_train, X_val, y_val):
         y_train: Integer training labels.
         X_val: Validation embeddings of shape (n_val, 300).
         y_val: Integer validation labels.
+        class_weight: Optional {label: weight} dict forwarded to
+            `config.build`. See `ClassifierConfig.build`.
 
     Returns:
         Macro-F1 on the validation data.
     """
-    classifier = config.build(config.sample(trial))
+    classifier = config.build(config.sample(trial), class_weight=class_weight)
     classifier.fit(X_train, y_train)
     predictions = classifier.predict(X_val)
+    return f1_score(y_val, predictions, average="macro")
     return f1_score(y_val, predictions, average="macro")

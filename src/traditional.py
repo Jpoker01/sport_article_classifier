@@ -40,6 +40,8 @@ def objective(trial, config, train_texts, y_train, val_texts, y_val):
         y_train: Integer training labels.
         val_texts: Validation documents.
         y_val: Integer validation labels.
+        class_weight: Optional {label: weight} dict forwarded to
+            `config.build`. See `ClassifierConfig.build`.
  
     Returns:
         Macro-F1 on the validation data.
@@ -68,7 +70,7 @@ def objective(trial, config, train_texts, y_train, val_texts, y_val):
     X_train = vectorizer.fit_transform(train_texts)
     X_val = vectorizer.transform(val_texts)
  
-    classifier = config.build(config.sample(trial))
+    classifier = config.build(config.sample(trial), class_weight=class_weight)
     classifier.fit(X_train, y_train)
     predictions = classifier.predict(X_val)
     
