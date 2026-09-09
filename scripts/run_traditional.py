@@ -8,6 +8,7 @@ from sklearn.preprocessing import LabelEncoder
 from src.classifiers import CLASSIFIER_CONFIGS
 from src.config import CLEAN_DATA_PATH, RESULTS_PATH
 from src.traditional import objective
+from src.weighting import capped_class_weight_dict
 
 def parse_args():
     """Parse command line arguments.
@@ -34,6 +35,7 @@ def main():
     encoder = LabelEncoder().fit(df["category"])
     y_train = encoder.transform(train["category"])
     y_val = encoder.transform(val["category"])
+    class_weight = capped_class_weight_dict(y_train, len(encoder.classes_))
 
     optuna.logging.set_verbosity(optuna.logging.WARNING)
 
@@ -53,20 +55,21 @@ def main():
         print(f"[{i}/{len(CLASSIFIER_CONFIGS)}] | Tuning {name} ...")
         study = optuna.create_study(direction="maximize", study_name=f"tfidf_{name}")
         study.optimize(
-            lambda t: objective(t, config, train["text"], y_train, val["text"], y_val),
+            lambda t: objective(t, config, train["text"], y_train, val["text"], y_val,
+                                class_weight=class_weight),
             n_trials=args.n_trials,
             show_progress_bar=True,
         )
         results[name] = {"best_val_macro_f1": study.best_value, **study.best_params}
         print(f"    {name} val macro-F1 = {study.best_value:.4f}")
-
+ 
         pd.DataFrame(results).T.to_csv(trials_path)
-
+ 
     summary = pd.DataFrame(results).T.sort_values("best_val_macro_f1", ascending=False)
     summary.to_csv(trials_path)
     print(f"\nSaved: {trials_path}")
     print(summary)
-
-
+ 
+ 
 if __name__ == "__main__":
     main()

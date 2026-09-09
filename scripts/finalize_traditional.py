@@ -7,7 +7,8 @@ from src.classifiers import CLASSIFIER_CONFIGS, load_best_trial
 from src.config import CLEAN_DATA_PATH, RESULTS_PATH, ROOT
 from src.evaluate import evaluate, full_report
 from src.traditional import build_tfidf_vectorizer
- 
+from src.weighting import capped_class_weight_dict
+
  
 def main():
     """Refit the winning TF-IDF configuration and score it once on the test split."""
@@ -36,12 +37,13 @@ def main():
     encoder = LabelEncoder().fit(df["category"])
     y_train = encoder.transform(train["category"])
     y_test = encoder.transform(test["category"])
- 
+    class_weight = capped_class_weight_dict(y_train, len(encoder.classes_))
+
     vectorizer = build_tfidf_vectorizer(**tfidf_params)
     X_train = vectorizer.fit_transform(train["text"])
     X_test = vectorizer.transform(test["text"])
  
-    classifier = CLASSIFIER_CONFIGS[name].build(classifier_params)
+    classifier = CLASSIFIER_CONFIGS[name].build(classifier_params, class_weight=class_weight)
     classifier.fit(X_train, y_train)
     y_pred = classifier.predict(X_test)
  
