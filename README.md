@@ -18,7 +18,7 @@ All hyperparameters are tuned with Optuna against validation macro-F1.
 Macro-F1 is the primary metric because the classes are heavily imbalanced.
 
 ## Tech Stack
-*   **Language:** Python 3.13
+*   **Language:** Python 3.11 to 3.13 (results produced on 3.13)
 *   **Text representations:**
     *   **TF-IDF (scikit-learn):** Optuna selects between word-level unigrams/bigrams and character n-grams (`analyzer="char_wb"`), sparse features.
     *   **fastText:** Pretrained Czech 300-dimensional embeddings (`cc.cs.300.bin`), averaged into one document vector.
@@ -32,10 +32,13 @@ Macro-F1 is the primary metric because the classes are heavily imbalanced.
 ## Quickstart guide
 
 ### Software requirements
-- Python 3.13
+- Python 3.11 to 3.13
 - Git
-- A C++ compiler, required to build fastText
-- Linux, macOS or WSL2 on Windows
+- Linux, macOS or Windows. The TF-IDF and transformer pipelines need nothing beyond the above.
+- **Only for the fastText pipeline:** a C++ toolchain, because fastText ships no
+  usable prebuilt wheels and is compiled from source during installation
+  (`build-essential` on Linux, `xcode-select --install` on macOS, Visual C++ Build
+  Tools or WSL2 on Windows). See [Optional: the fastText pipeline](#optional-the-fasttext-pipeline).
 
 ### Hardware requirements
 All code was executed on the MetaCentrum Jupyter environment:
@@ -76,6 +79,40 @@ python -m ipykernel install --user --name sport-classifier --display-name "Pytho
 
 When using the venv, select the **Python (sport-classifier)** kernel in each
 notebook before running the cells.
+
+This base install is enough for the TF-IDF pipeline, the transformer pipeline and
+all three notebooks. It needs no compiler and works on Linux, macOS and Windows.
+
+#### Optional: the fastText pipeline
+
+fastText is an *extra*, not a base dependency. PyPI publishes exactly one wheel for
+`fasttext==0.9.3` (CPython 3.9, macOS arm64), so on every other platform pip compiles
+it from source. If that build fails and fastText is a base dependency, pip aborts the
+whole transaction and the environment ends up with **nothing** installed, not even
+pandas or scikit-learn. Keeping it in an extra confines that failure to the one
+pipeline that actually needs it.
+
+```bash
+pip install -e ".[fasttext]"
+```
+
+This requires a C++ toolchain:
+
+| Platform | Prerequisite |
+|----------|--------------|
+| Linux    | `sudo apt install build-essential python3-dev` |
+| macOS    | `xcode-select --install` |
+| Windows  | Visual C++ Build Tools, or run the project under WSL2 |
+
+Without a compiler, prebuilt wheels are available for Python 3.12 and older:
+
+```bash
+pip install fasttext-wheel==0.9.2
+```
+
+`src/embeddings.py` imports fastText lazily, so if it is missing the TF-IDF and
+transformer paths still run and only `load_fasttext` raises, with the install
+instructions in the error message.
 
 ### Data preparation
 
@@ -126,6 +163,13 @@ Replace `<LR>`, `<BATCH_SIZE>`, `<WEIGHT_DECAY>` and `<LABEL_SMOOTHING>` with th
 
 Once all three finalize scripts have run, open `notebooks/results_analysis.ipynb` for the final comparison table, confusion matrices, per-class F1 and error analysis.
 
+> **This notebook cannot be executed on a bare clone.** It reads the prediction and
+> metric artifacts that the three `finalize_*.py` scripts write into `results/`, and
+> those depend on the raw dataset and on trained model weights, neither of which is in
+> this repository (the data source cannot be disclosed, and the weights are several GB).
+> A fresh clone therefore has to run the data preparation and the three pipelines above
+> first. The committed cell outputs show the results the report is based on.
+
 ## Project structure
 
 The work is organized as follows:
@@ -152,3 +196,4 @@ The work is organized as follows:
    * **finalize_embeddings.py** - Refits the winning fastText classifier on train data and evaluates it on the test split
    * **finalize_transformer.py** - Loads the fine-tuned transformer from `--model-dir` and evaluates it on the test split
  * **/results** - Metrics, predictions and figures. Trained model weights are **not included in git** due to size and to avoid disclosing any data information.
+
