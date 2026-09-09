@@ -3,11 +3,11 @@ requires = ["setuptools>=68"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "sport-article-classifier" 
-version = "0.1.0" 
+name = "sport-article-classifier"
+version = "0.1.0"
 description = "Classification of Czech sport news articles into sport categories" #meta-info
 readme = "README.md"
-requires-python = ">=3.11" 
+requires-python = ">=3.11"
 dependencies = [
     "pandas==3.0.3",
     "pyarrow==24.0.0",
@@ -18,13 +18,22 @@ dependencies = [
     "torch==2.13.0",
     "transformers==5.16.1",
     "accelerate==1.14.0",
-    "fasttext==0.9.3",
     "matplotlib==3.11.0",
     "tqdm==4.68.3",
     "seaborn==0.13.2",
     "ipykernel==6.30.1",
     "joblib==1.5.2",
 ]
+
+# fastText is deliberately NOT a hard dependency. PyPI ships exactly one wheel
+# for fasttext 0.9.3 (cp39, macOS arm64), so every other platform compiles it
+# from the sdist and needs a C++ toolchain. As a hard dependency that build
+# failure aborts the entire `pip install -e .` transaction, which leaves the
+# environment with nothing installed at all, not even pandas or scikit-learn.
+# Only the fastText embedding pipeline needs it; TF-IDF and the transformer
+# do not, so it lives in an extra and is imported lazily in src/embeddings.py.
+[project.optional-dependencies]
+fasttext = ["fasttext==0.9.3"]
 
 [tool.setuptools.packages.find] # tells the tool WHICH part of the codebase to use as the package.
 include = ["src*"]
