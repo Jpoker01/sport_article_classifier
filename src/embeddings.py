@@ -1,6 +1,7 @@
 """fastText embeddings as a fixed representation for the classic classifiers."""
 import numpy as np
 from sklearn.metrics import f1_score
+from gensim.models.fasttext import load_facebook_vectors
 
 from src.classifiers import CLASSIFIER_CONFIGS
 
@@ -8,40 +9,24 @@ from src.classifiers import CLASSIFIER_CONFIGS
 EMBEDDING_CONFIGS = {k: v for k, v in CLASSIFIER_CONFIGS.items()
                      if k not in ("multinomial_nb", "complement_nb")}
 
-def _import_fasttext():
-    """Import fasttext lazily so the TF-IDF and transformer pipelines run without it."""
-    try:
-        import fasttext
-    except ImportError as exc:
-        raise ImportError(
-            "fastText is optional. Install with: pip install -e .[fasttext]"
-        ) from exc
-    return fasttext
-
-
 def load_fasttext(model_path):
-    """Load a pretrained fastText model"""
-    fasttext = _import_fasttext()
-    return fasttext.load_model((str(model_path))) # fasttext.load_model can accept only strings - not Path objects
+    return load_facebook_vectors(str(model_path))
 
-def embed_documents(texts, model):
-    """Take a pandas series and return a list of vectors calculated using fastText model
-
-    Args:
-        texts: Iterable of document strings - a pandas Series.
-        model: Loaded fastText model.
-
-    Returns:
-        Array of shape (n_documents, 300). Newlines are replaced with spaces
-        because get_sentence_vector treats them as sentence separators and
-        raises on multi-line input.
-    """
+def embed_documents(texts, kv):
+    dim = kv.vector_size
     vectors = []
     for text in texts:
-        clean_text = text.replace("\n", " ") #fastText fails on newline characters
-        vectors.append(model.get_sentence_vector(clean_text))
+        tokens = text.replace("\n", " ").split()
+        # fastText-style: L2-normalize each word vector, then average
+        vecs = []
+        for t in tokens:
+            v = kv[t]  # gensim handles OOV via subwords automatically
+            n = np.linalg.norm(v)
+            if n > 0:
+                vecs.append(v / n)
+        vec = np.mean(vecs, axis=0) if vecs else np.zeros(dim)
+        vectors.append(vec)
     return np.vstack(vectors)
-
 
 def objective(trial, config, X_train, y_train, X_val, y_val):
     """Sample classifier hyperparameters, fit on fixed embeddings, scored on validation set.
