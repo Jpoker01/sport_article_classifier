@@ -22,6 +22,8 @@ from src.config import (
     TRANSFORMER_WARMUP_RATIO,
 )
 
+from src.weighting import compute_capped_class_weight  # noqa: F401
+
 class TextClassificationDataset(Dataset):
     """Pytorch dataset definition for the Trainer"""
     def __init__(self, texts, labels, tokenizer, max_length):
@@ -29,10 +31,10 @@ class TextClassificationDataset(Dataset):
         self.labels = list(labels)
         self.tokenizer = tokenizer
         self.max_length = max_length
-
+ 
     def __len__(self):
         return len(self.texts)
-
+ 
     def __getitem__(self, idx):
         encoding = self.tokenizer(
             self.texts[idx],
@@ -61,7 +63,7 @@ class WeightedTrainer(Trainer):
     def __init__(self, class_weights=None, **kwargs):
         super().__init__(**kwargs)
         self.class_weights = class_weights
-
+ 
     def compute_loss(self, model, inputs, return_outputs=False, **kwargs):
         labels = inputs.pop("labels")
         outputs = model(**inputs)
@@ -78,21 +80,21 @@ def objective(trial, model_name, train, val, y_train, y_val,
     batch_size = trial.suggest_categorical("batch_size", [16, 32])
     weight_decay = trial.suggest_categorical("weight_decay", [0.0, 0.01, 0.1])
     label_smoothing = trial.suggest_categorical("label_smoothing", [0.0, 0.05, 0.1])
-
+ 
     tokenizer = AutoTokenizer.from_pretrained(model_name)
     train_ds = TextClassificationDataset(train["text"], y_train, tokenizer, max_length)
     val_ds = TextClassificationDataset(val["text"], y_val, tokenizer, max_length)
     model = AutoModelForSequenceClassification.from_pretrained(
         model_name, num_labels=len(class_weights)
     )
-
+ 
     trial_dir = out_dir_base / f"trial{trial.number:03d}"
     trial_dir.mkdir(parents=True, exist_ok=True)
-
+ 
     steps_per_epoch = math.ceil(len(train) / batch_size)
     total_steps = steps_per_epoch * epochs
     warmup_steps = int(TRANSFORMER_WARMUP_RATIO * total_steps)
-
+ 
     training_args = TrainingArguments(
         output_dir=str(trial_dir / "checkpoints"),
         num_train_epochs=epochs,
@@ -113,7 +115,7 @@ def objective(trial, model_name, train, val, y_train, y_val,
         seed=SEED,
         save_total_limit=1,
     )
-
+ 
     trainer = WeightedTrainer(
         model=model,
         args=training_args,
