@@ -1,0 +1,2 @@
+loss,macro_f1,accuracy,runtime,samples_per_second,steps_per_second
+0.1186048835515976,0.9741892328980651,0.9897742620104186,13.5822,763.207,23.855
