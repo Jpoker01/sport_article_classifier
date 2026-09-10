@@ -2,7 +2,7 @@
 import numpy as np
 from sklearn.metrics import f1_score
 from gensim.models.fasttext import load_facebook_vectors
-
+from xgboost import XGBClassifier
 from src.classifiers import CLASSIFIER_CONFIGS
 
 # A comprehension is used instead of deleting keys so the shared CLASSIFIER_CONFIGS stays intact
@@ -45,7 +45,14 @@ def objective(trial, config, X_train, y_train, X_val, y_val, class_weight=None):
         Macro-F1 on the validation data.
     """
     classifier = config.build(config.sample(trial), class_weight=class_weight)
-    classifier.fit(X_train, y_train)
+    fit_kwargs = {}
+    if isinstance(classifier, XGBClassifier) and class_weight is not None:
+        fit_kwargs["sample_weight"] = np.array(
+            [class_weight[int(y)] for y in y_train]
+        )
+
+    classifier.fit(X_train, y_train, **fit_kwargs)
+    
     predictions = classifier.predict(X_val)
-    return f1_score(y_val, predictions, average="macro")
+
     return f1_score(y_val, predictions, average="macro")

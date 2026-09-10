@@ -1,7 +1,10 @@
 """Traditional TF-IDF baselines with Optuna tuning."""
+import numpy as np
+
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics import f1_score
- 
+from xgboost import XGBClassifier
+
 def build_tfidf_vectorizer(max_features, min_df, ngram_range=(1, 2),
                            lowercase=True, sublinear_tf=True, analyzer="word"):
     """Build a TF-IDF vectorizer over words or character n-grams.
@@ -71,7 +74,13 @@ def objective(trial, config, train_texts, y_train, val_texts, y_val, class_weigh
     X_val = vectorizer.transform(val_texts)
  
     classifier = config.build(config.sample(trial), class_weight=class_weight)
-    classifier.fit(X_train, y_train)
+    fit_kwargs = {}
+    if isinstance(classifier, XGBClassifier) and class_weight is not None:
+        fit_kwargs["sample_weight"] = np.array(
+            [class_weight[int(y)] for y in y_train]
+        )
+
+    classifier.fit(X_train, y_train, **fit_kwargs)
     predictions = classifier.predict(X_val)
-    
     return f1_score(y_val, predictions, average="macro")
+    
