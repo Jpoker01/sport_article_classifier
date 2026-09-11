@@ -4,7 +4,7 @@ from sklearn.preprocessing import LabelEncoder, StandardScaler
 import joblib
 
 from src.classifiers import CLASSIFIER_CONFIGS, load_best_trial
-from from src.config import CLEAN_DATA_PATH, FASTTEXT_MODEL_PATH, EMBEDDINGS_DIR
+from src.config import CLEAN_DATA_PATH, FASTTEXT_MODEL_PATH, EMBEDDINGS_DIR
 from src.embeddings import embed_documents, load_fasttext
 from src.evaluate import evaluate, full_report
 from src.weighting import capped_class_weight_dict
