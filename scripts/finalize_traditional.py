@@ -3,6 +3,7 @@ import pandas as pd
 import numpy as np
 
 from sklearn.preprocessing import LabelEncoder
+from xgboost import XGBClassifier
 import joblib
  
 from src.classifiers import CLASSIFIER_CONFIGS, load_best_trial
