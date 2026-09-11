@@ -5,7 +5,7 @@ import optuna
 import pandas as pd
 from sklearn.preprocessing import LabelEncoder, StandardScaler
 
-from src.config import CLEAN_DATA_PATH, FASTTEXT_MODEL_PATH, EMBEDDINGS_DIR
+from src.config import CLEAN_DATA_PATH, FASTTEXT_MODEL_PATH, EMBEDDINGS_DIR, SEED
 from src.embeddings import EMBEDDING_CONFIGS, embed_documents, load_fasttext, objective
 from src.weighting import capped_class_weight_dict
 
@@ -48,7 +48,8 @@ def main():
     results = {}
     for i, (name, config) in enumerate(EMBEDDING_CONFIGS.items(), 1):
         print(f"[{i}/{len(EMBEDDING_CONFIGS)}] Tuning {name} ...")
-        study = optuna.create_study(direction="maximize", study_name=f"fasttext_{name}")
+        study = optuna.create_study(direction="maximize", study_name=f"fasttext_{name}",
+                                    sampler=optuna.samplers.TPESampler(seed=SEED))
         study.optimize(
             lambda trial: objective(trial, config, X_train, y_train, X_val, y_val,
                                     class_weight=class_weight),
