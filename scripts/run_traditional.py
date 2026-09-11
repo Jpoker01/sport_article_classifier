@@ -6,7 +6,7 @@ import pandas as pd
 from sklearn.preprocessing import LabelEncoder
 
 from src.classifiers import CLASSIFIER_CONFIGS
-from src.config import CLEAN_DATA_PATH, TRADITIONAL_DIR
+from src.config import CLEAN_DATA_PATH, RESULTS_PATH, SEED
 from src.traditional import objective
 from src.weighting import capped_class_weight_dict
 
@@ -53,7 +53,8 @@ def main():
         
     for i, (name, config) in enumerate(configs.items(), 1):
         print(f"[{i}/{len(CLASSIFIER_CONFIGS)}] | Tuning {name} ...")
-        study = optuna.create_study(direction="maximize", study_name=f"tfidf_{name}")
+        study = optuna.create_study(direction="maximize", study_name=f"tfidf_{name}",
+                                    sampler=optuna.samplers.TPESampler(seed=SEED))
         study.optimize(
             lambda t: objective(t, config, train["text"], y_train, val["text"], y_val,
                                 class_weight=class_weight),
