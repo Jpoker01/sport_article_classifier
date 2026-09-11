@@ -4,76 +4,103 @@
 import argparse
 import time
 from pathlib import Path
-
+ 
 import numpy as np
 import pandas as pd
 import torch
 from sklearn.preprocessing import LabelEncoder
 from torch.utils.data import DataLoader
 from transformers import AutoModelForSequenceClassification, AutoTokenizer
-
+ 
 from src.config import CLEAN_DATA_PATH, DEVICE, TRANSFORMER_MAX_LENGTH
 from src.evaluate import evaluate, full_report
 from src.transformer import TextClassificationDataset
-
+ 
+ 
 def parse_args():
     """Parse command line arguments.
-
+ 
     Returns:
         Namespace with model_dir, max_length and batch_size.
     """
     parser = argparse.ArgumentParser()
-    parser.add_argument("--model-dir", required=True)
+    parser.add_argument(
+        "--model-dir",
+        required=True,
+        help="Local model directory or a Hugging Face Hub repo id.",
+    )
     parser.add_argument("--max-length", type=int, default=TRANSFORMER_MAX_LENGTH)
     parser.add_argument("--batch-size", type=int, default=64)
     return parser.parse_args()
-
+ 
+ 
+def load_label_classes(model_dir_arg: str, model_dir: Path) -> np.ndarray:
+    """Load label_classes.npy from a local model dir, its parent, or the HF Hub."""
+    for candidate in (model_dir / "label_classes.npy",
+                      model_dir.parent / "label_classes.npy"):
+        if candidate.exists():
+            return np.load(candidate, allow_pickle=True)
+    from huggingface_hub import hf_hub_download
+    path = hf_hub_download(repo_id=model_dir_arg, filename="label_classes.npy")
+    return np.load(path, allow_pickle=True)
+ 
+ 
+def resolve_out_dir(model_dir_arg: str, model_dir: Path) -> Path:
+    """Where to save outputs: parent of a local dir, or a results/ slug for a HF id."""
+    if model_dir.exists():
+        return model_dir.parent
+    slug = model_dir_arg.replace("/", "__")
+    out_dir = Path("results/transformer") / slug
+    out_dir.mkdir(parents=True, exist_ok=True)
+    return out_dir
+ 
+ 
 def main():
     """Score a saved transformer on the held-out test split and save the results."""
     args = parse_args()
     model_dir = Path(args.model_dir)
-    out_dir = model_dir.parent
-
+ 
     df = pd.read_parquet(CLEAN_DATA_PATH)
     test = df[df["split"] == "test"]
-
+ 
     encoder = LabelEncoder()
-    encoder.classes_ = np.load(out_dir / "label_classes.npy", allow_pickle=True)
+    encoder.classes_ = load_label_classes(args.model_dir, model_dir)
     y_test = encoder.transform(test["category"])
-
-    tokenizer = AutoTokenizer.from_pretrained(str(model_dir))
-    model = AutoModelForSequenceClassification.from_pretrained(str(model_dir))
+ 
+    tokenizer = AutoTokenizer.from_pretrained(args.model_dir)
+    model = AutoModelForSequenceClassification.from_pretrained(args.model_dir)
     model.to(DEVICE).eval()
-
+ 
     dataset = TextClassificationDataset(test["text"], y_test, tokenizer, args.max_length)
     loader = DataLoader(dataset, batch_size=args.batch_size, shuffle=False)
-
+ 
     predictions = []
     start = time.time()
     with torch.no_grad():
         for batch in loader:
             logits = model(
-            input_ids=batch["input_ids"].to(DEVICE),
-            attention_mask=batch["attention_mask"].to(DEVICE),
+                input_ids=batch["input_ids"].to(DEVICE),
+                attention_mask=batch["attention_mask"].to(DEVICE),
             ).logits
             predictions.extend(logits.argmax(dim=-1).cpu().numpy().tolist())
     elapsed = time.time() - start
-
+ 
     y_pred = np.array(predictions)
-
+ 
     metrics = evaluate(y_test, y_pred)
     metrics["inference_seconds"] = elapsed
     metrics["inference_ms_per_sample"] = elapsed / len(test) * 1000
-    
+ 
     print(metrics)
     labels = np.arange(len(encoder.classes_))
     confusion = full_report(y_test, y_pred, labels=labels,
                             target_names=encoder.classes_)
-
+ 
+    out_dir = resolve_out_dir(args.model_dir, model_dir)
     metrics_path = out_dir / "test_metrics.csv"
     predictions_path = out_dir / "test_predictions.csv"
     confusion_path = out_dir / "test_confusion_matrix.csv"
-
+ 
     pd.DataFrame([metrics]).to_csv(metrics_path, index=False)
     pd.DataFrame({
         "text": test["text"].values,
@@ -82,11 +109,11 @@ def main():
     }).to_csv(predictions_path, index=False)
     pd.DataFrame(confusion, index=encoder.classes_,
                  columns=encoder.classes_).to_csv(confusion_path)
-
+ 
     print(f"Saved: {metrics_path}")
     print(f"Saved: {predictions_path}")
     print(f"Saved: {confusion_path}")
-
-
+ 
+ 
 if __name__ == "__main__":
     main()

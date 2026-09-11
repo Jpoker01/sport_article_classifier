@@ -1,27 +1,42 @@
+# ---- data & large binaries ----
 data/*
 !data/.gitkeep
+ 
+# Compressed archives (usually raw data dumps)
 *.gz
-*.pt
+ 
+# fastText Czech pretrained vectors from Facebook (several GB, download separately)
 *.bin
+*.vec
+ 
+# Transformer weights (hosted on Hugging Face Hub)
 *.safetensors
+*.pt
+ 
+# ---- training artefacts ----
 checkpoints/
 outputs/
-
-# results
 results/transformer/**/checkpoints/
-
-# python
+ 
+# Local staging folder for uploading to Hugging Face Hub
+hf-upload/
+ 
+# ---- python ----
 __pycache__/
 *.pyc
 .venv/
 venv/
 .ipynb_checkpoints/
-
-
 *.egg-info/
 build/
 dist/
-
-# secrets, env
+ 
+# ---- IDE / OS ----
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+ 
+# ---- secrets ----
 .env
 *.secret
