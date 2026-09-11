@@ -23,7 +23,7 @@ dependencies = [
     "seaborn==0.13.2",
     "ipykernel==6.30.1",
     "joblib==1.5.2",
-    "gensim==4.4.0",,
+    "gensim==4.4.0",
     "sentencepiece==0.2.1",
 ]
 
