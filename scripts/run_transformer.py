@@ -143,11 +143,14 @@ def main():
     print(f"Saved: {metrics_path}")
  
     if not args.no_save:
-        best_dir = out_dir / "best"
-        trainer.save_model(str(best_dir))
-        tokenizer.save_pretrained(str(best_dir))
+        trainer.save_model(str(out_dir))
+        tokenizer.save_pretrained(str(out_dir))
         np.save(out_dir / "label_classes.npy", encoder.classes_)
-        print(f"Saved: {best_dir}")
+        print(f"Saved: {out_dir}")
+
+
+
+
  
 if __name__ == "__main__":
     main()

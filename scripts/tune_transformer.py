@@ -56,10 +56,10 @@ def main():
     args = parse_args()
     safe_model_name = args.model_name.replace("/", "_")
     
-    out_dir = RESULTS_PATH / "transformer" / f"{safe_model_name}__tuning"
+    out_dir = RESULTS_PATH / "transformer" / safe_model_name / "tuning"
     out_dir.mkdir(parents=True, exist_ok=True)
-    trials_path = out_dir / "transformer_optuna_trials.csv"
-
+    trials_path = out_dir / "optuna_trials.csv"
+    
     df = pd.read_parquet(CLEAN_DATA_PATH)
     
     # Fit on all categories so a class missing from one split cannot break encoding.

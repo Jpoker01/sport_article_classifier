@@ -36,10 +36,9 @@ def parse_args():
  
 def load_label_classes(model_dir_arg: str, model_dir: Path) -> np.ndarray:
     """Load label_classes.npy from a local model dir, its parent, or the HF Hub."""
-    for candidate in (model_dir / "label_classes.npy",
-                      model_dir.parent / "label_classes.npy"):
-        if candidate.exists():
-            return np.load(candidate, allow_pickle=True)
+    candidate = model_dir / "label_classes.npy"
+    if candidate.exists():
+        return np.load(candidate, allow_pickle=True)
     from huggingface_hub import hf_hub_download
     path = hf_hub_download(repo_id=model_dir_arg, filename="label_classes.npy")
     return np.load(path, allow_pickle=True)
@@ -48,7 +47,7 @@ def load_label_classes(model_dir_arg: str, model_dir: Path) -> np.ndarray:
 def resolve_out_dir(model_dir_arg: str, model_dir: Path) -> Path:
     """Where to save outputs: parent of a local dir, or a results/ slug for a HF id."""
     if model_dir.exists():
-        return model_dir.parent
+        return model_dir
     slug = model_dir_arg.replace("/", "__")
     out_dir = Path("results/transformer") / slug
     out_dir.mkdir(parents=True, exist_ok=True)
