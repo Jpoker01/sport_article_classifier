@@ -6,7 +6,7 @@ import pandas as pd
 from sklearn.preprocessing import LabelEncoder
 
 from src.classifiers import CLASSIFIER_CONFIGS
-from src.config import CLEAN_DATA_PATH, RESULTS_PATH, SEED
+from src.config import CLEAN_DATA_PATH, RESULTS_PATH, TRADITIONAL_DIR, SEED
 from src.traditional import objective
 from src.weighting import capped_class_weight_dict
 
