@@ -7,6 +7,11 @@ from torch.utils.data import Dataset
 from sklearn.metrics import accuracy_score, f1_score
 import math
 
+import torch
+use_cuda = torch.cuda.is_available()
+use_bf16 = use_cuda and torch.cuda.is_bf16_supported()
+use_fp16 = use_cuda and not use_bf16
+
 from transformers import (
     Trainer,
     AutoModelForSequenceClassification,
@@ -109,7 +114,10 @@ def objective(trial, model_name, train, val, y_train, y_val,
         load_best_model_at_end=True,
         metric_for_best_model=PRIMARY_METRIC,
         greater_is_better=True,
-        bf16=True,
+        bf16=use_bf16,
+        fp16=use_fp16,
+        use_cpu=not use_cuda,
+        save_total_limit=1,
         logging_steps=50,
         report_to="none",
         seed=SEED,
