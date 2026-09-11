@@ -1,6 +1,8 @@
 """Rebuild the best fastText trial on the training split and evaluate it on test."""
 import pandas as pd
+import numpy as np
 from sklearn.preprocessing import LabelEncoder, StandardScaler
+from xgboost import XGBClassifier
 import joblib
 
 from src.classifiers import CLASSIFIER_CONFIGS, load_best_trial
@@ -35,7 +37,10 @@ def main():
     X_test = scaler.transform(X_test)
 
     classifier = CLASSIFIER_CONFIGS[name].build(params, class_weight=class_weight)
-    classifier.fit(X_train, y_train)
+    fit_kwargs = {}
+    if isinstance(classifier, XGBClassifier):
+        fit_kwargs["sample_weight"] = np.array([class_weight[int(y)] for y in y_train])
+    classifier.fit(X_train, y_train, **fit_kwargs)
     y_pred = classifier.predict(X_test)
 
     metrics = evaluate(y_test, y_pred)
