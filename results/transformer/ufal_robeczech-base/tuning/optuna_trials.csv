@@ -1,0 +1,2 @@
+trial,macro_f1,lr,batch_size,weight_decay,label_smoothing
+0,0.9657183567158212,2.1789307659775746e-05,16,0.0,0.05

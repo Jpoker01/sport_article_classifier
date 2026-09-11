@@ -1,7 +1,7 @@
 ,best_val_macro_f1,tfidf_analyzer,tfidf_char_ngram_max,tfidf_max_features,tfidf_min_df,tfidf_sublinear_tf,C,loss,alpha,fit_prior,tfidf_ngram_max,norm,n_estimators,max_depth,max_features,min_samples_leaf,learning_rate,subsample,colsample_bytree,reg_lambda,min_child_weight
 linear_svc,0.9657844530224384,char_wb,4.0,100000,1,False,1.104324845193697,squared_hinge,,,,,,,,,,,,,
-logreg,0.9623722286100904,char_wb,4.0,100000,2,True,65.47063625417664,,,,,,,,,,,,,,
 multinomial_nb,0.9417129763611536,char_wb,4.0,100000,3,False,,,0.0105560559756111,True,,,,,,,,,,,
 complement_nb,0.9322331838140352,word,,100000,4,False,,,0.0017704798938381,True,2.0,False,,,,,,,,,
 random_forest,0.786373970719021,,,50000,2,False,,,,,2.0,,181.0,56.0,sqrt,1.0,,,,,
-xgboost,0.3102174373764288,,,100000,1,False,,,,,2,,230,12,,,0.011530049147655116,0.66106632803394,0.8769930163489501,0.3805995935947578,7
+xgboost,0.3102174373764288,,,100000,1,False,,,,,2.0,,230.0,12.0,,,0.0115300491476551,0.66106632803394,0.8769930163489501,0.3805995935947578,7.0
+logreg,0.30673712784973,char_wb,4,20000,5,False,0.012087541473056965,,,,,,,,,,,,,,
