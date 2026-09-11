@@ -1,5 +1,7 @@
 """Rebuild the best TF-IDF trial on the training split and evaluate it on test."""
 import pandas as pd
+import numpy as np
+
 from sklearn.preprocessing import LabelEncoder
 import joblib
  
@@ -45,7 +47,10 @@ def main():
     X_test = vectorizer.transform(test["text"])
  
     classifier = CLASSIFIER_CONFIGS[name].build(classifier_params, class_weight=class_weight)
-    classifier.fit(X_train, y_train)
+    fit_kwargs = {}
+    if isinstance(classifier, XGBClassifier):
+        fit_kwargs["sample_weight"] = np.array([class_weight[int(y)] for y in y_train])
+    classifier.fit(X_train, y_train, **fit_kwargs)
     y_pred = classifier.predict(X_test)
  
     metrics = evaluate(y_test, y_pred)
