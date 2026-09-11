@@ -4,14 +4,15 @@ from sklearn.preprocessing import LabelEncoder, StandardScaler
 import joblib
 
 from src.classifiers import CLASSIFIER_CONFIGS, load_best_trial
-from src.config import CLEAN_DATA_PATH, FASTTEXT_MODEL_PATH, RESULTS_PATH
+from from src.config import CLEAN_DATA_PATH, FASTTEXT_MODEL_PATH, EMBEDDINGS_DIR
 from src.embeddings import embed_documents, load_fasttext
 from src.evaluate import evaluate, full_report
 from src.weighting import capped_class_weight_dict
 
 def main():
     """Refit the winning classifier on fastText embeddings and score it on test."""
-    name, val_score, params = load_best_trial(RESULTS_PATH / "embeddings_optuna_trials.csv")
+    EMBEDDINGS_DIR.mkdir(parents=True, exist_ok=True)
+    name, val_score, params = load_best_trial(EMBEDDINGS_DIR / "optuna_trials.csv")
     print(f"Best trial: {name} (val macro_f1: {val_score:.4f})")
     print(f"Classifier params: {params}")
 
@@ -41,8 +42,8 @@ def main():
     print(metrics)
     full_report(y_test, y_pred, target_names=encoder.classes_)
     
-    metrics_path = RESULTS_PATH / "embeddings_test_metrics.csv"
-    predictions_path = RESULTS_PATH / "embeddings_test_predictions.csv"
+    metrics_path = EMBEDDINGS_DIR / "test_metrics.csv"
+    predictions_path = EMBEDDINGS_DIR / "test_predictions.csv"
     pd.DataFrame([metrics]).to_csv(metrics_path, index=False)
     pd.DataFrame({
         "text": test["text"].values,
@@ -52,7 +53,7 @@ def main():
     print(f"\nSaved: {metrics_path}")
     print(f"Saved: {predictions_path}")
 
-    model_path = RESULTS_PATH / "embeddings_model.joblib"
+    model_path = EMBEDDINGS_DIR / "model.joblib"
     joblib.dump(
         {"scaler": scaler, "classifier": classifier, "encoder": encoder},
         model_path,

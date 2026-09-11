@@ -6,7 +6,7 @@ import pandas as pd
 from sklearn.preprocessing import LabelEncoder
 
 from src.classifiers import CLASSIFIER_CONFIGS
-from src.config import CLEAN_DATA_PATH, RESULTS_PATH
+from src.config import CLEAN_DATA_PATH, TRADITIONAL_DIR
 from src.traditional import objective
 from src.weighting import capped_class_weight_dict
 
@@ -39,8 +39,8 @@ def main():
 
     optuna.logging.set_verbosity(optuna.logging.WARNING)
 
-    RESULTS_PATH.mkdir(parents=True, exist_ok=True)
-    trials_path = RESULTS_PATH / "traditional_optuna_trials.csv"
+    TRADITIONAL_DIR.mkdir(parents=True, exist_ok=True)
+    trials_path = TRADITIONAL_DIR / "optuna_trials.csv"
 
     results = {}    
     if trials_path.exists():

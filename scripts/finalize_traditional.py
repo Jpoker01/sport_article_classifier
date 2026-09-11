@@ -4,7 +4,7 @@ from sklearn.preprocessing import LabelEncoder
 import joblib
  
 from src.classifiers import CLASSIFIER_CONFIGS, load_best_trial
-from src.config import CLEAN_DATA_PATH, RESULTS_PATH, ROOT
+from src.config import CLEAN_DATA_PATH, TRADITIONAL_DIR
 from src.evaluate import evaluate, full_report
 from src.traditional import build_tfidf_vectorizer
 from src.weighting import capped_class_weight_dict
@@ -12,7 +12,8 @@ from src.weighting import capped_class_weight_dict
  
 def main():
     """Refit the winning TF-IDF configuration and score it once on the test split."""
-    name, val_score, params = load_best_trial(RESULTS_PATH / "traditional_optuna_trials.csv")
+    TRADITIONAL_DIR.mkdir(parents=True, exist_ok=True)
+    name, val_score, params = load_best_trial(TRADITIONAL_DIR / "optuna_trials.csv")
     print(f"Best trial: {name} (val macro_f1: {val_score:.4f})")
  
     # tfidf_* params configure the vectorizer, everything else the classifier.
@@ -51,16 +52,16 @@ def main():
     print(metrics)
     full_report(y_test, y_pred, target_names=encoder.classes_)
  
-    pd.DataFrame([metrics]).to_csv(RESULTS_PATH / "traditional_test_metrics.csv", index=False)
+    pd.DataFrame([metrics]).to_csv(TRADITIONAL_DIR / "test_metrics.csv", index=False)
     pd.DataFrame({
         "text": test["text"].values,
         "true": encoder.inverse_transform(y_test),
         "pred": encoder.inverse_transform(y_pred),
-    }).to_csv(RESULTS_PATH / "traditional_test_predictions.csv", index=False)
+    }).to_csv(TRADITIONAL_DIR / "test_predictions.csv", index=False)
  
     joblib.dump(
     {"vectorizer": vectorizer, "classifier": classifier, "encoder": encoder},
-    RESULTS_PATH / "traditional_model.joblib",
+    TRADITIONAL_DIR / "model.joblib",
     )
  
 if __name__ == "__main__":

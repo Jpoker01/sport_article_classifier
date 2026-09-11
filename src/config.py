@@ -16,6 +16,8 @@ CLEAN_DATA_PATH = DATA_PATH / "clean.parquet"
 FASTTEXT_MODEL_PATH = DATA_PATH / "cc.cs.300.bin"
 
 RESULTS_PATH = ROOT / "results"
++TRADITIONAL_DIR = RESULTS_PATH / "traditional"
++EMBEDDINGS_DIR = RESULTS_PATH / "embeddings"
 
 # Training / test / validation split constants
 VAL_SIZE = 0.1

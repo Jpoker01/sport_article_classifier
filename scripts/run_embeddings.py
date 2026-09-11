@@ -5,7 +5,7 @@ import optuna
 import pandas as pd
 from sklearn.preprocessing import LabelEncoder, StandardScaler
 
-from src.config import CLEAN_DATA_PATH, FASTTEXT_MODEL_PATH, RESULTS_PATH, ROOT
+from src.config import CLEAN_DATA_PATH, FASTTEXT_MODEL_PATH, EMBEDDINGS_DIR
 from src.embeddings import EMBEDDING_CONFIGS, embed_documents, load_fasttext, objective
 from src.weighting import capped_class_weight_dict
 
@@ -42,8 +42,8 @@ def main():
     X_train = scaler.transform(X_train)
     X_val = scaler.transform(X_val)
  
-    RESULTS_PATH.mkdir(parents=True, exist_ok=True)
-    trials_path = RESULTS_PATH / "embeddings_optuna_trials.csv"
+    EMBEDDINGS_DIR.mkdir(parents=True, exist_ok=True)
+    trials_path = EMBEDDINGS_DIR / "optuna_trials.csv"
     
     results = {}
     for i, (name, config) in enumerate(EMBEDDING_CONFIGS.items(), 1):
