@@ -121,7 +121,6 @@ def objective(trial, model_name, train, val, y_train, y_val,
         logging_steps=50,
         report_to="none",
         seed=SEED,
-        save_total_limit=1,
     )
  
     trainer = WeightedTrainer(
