@@ -63,7 +63,8 @@ pip install -e .
 
 ### Data preparation
 
-The raw dataset is not included in this repository, as the source cannot be disclosed. Place the raw dataset into `data/` (kept out of git). The `data_prep.ipynb` notebook cleans it and writes `data/clean.parquet`, which every training script reads and uses.
+**The raw dataset is not included in this repository, as the source cannot be disclosed.**  
+Place the raw dataset into `data/` (kept out of git). The `data_prep.ipynb` notebook cleans it and writes `data/clean.parquet`, which every training script reads and uses.
 
 The Czech fastText model needs to be downloaded separately (~7 GB):
 
