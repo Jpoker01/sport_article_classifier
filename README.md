@@ -4,7 +4,7 @@ Machine learning project focused on training an optimal classifier model for Cze
 articles. Three approaches are compared: 
 * TF-IDF in combination with traditional classifiers.
 * Pretrained fastText embeddings with the same traditional classifiers.
-* Fine-tuned czech transformer.
+* Fine-tuned Czech transformer.
   
 All hyperparameters are tuned with Optuna against validation macro-F1.  
 
@@ -19,11 +19,11 @@ All hyperparameters are tuned with Optuna against validation macro-F1.
 Macro-F1 is the primary metric because the classes are heavily imbalanced.
 
 ## Tech Stack
-*   **Language:** Python 3.11 to 3.12 (results produced on 3.12)
+*   **Language:** Python 3.11 to 3.12 (results produced on 3.11)
 *   **Methods**
     *   **TF-IDF (scikit-learn):** Optuna selects between word-level unigrams/bigrams and character n-grams (`analyzer="char_wb"`), sparse features.
     *   **fastText:** Pretrained Czech 300-dimensional embeddings (`cc.cs.300.bin`), averaged into one document vector.
-    *   **Transformers:** Two Czech encoders tried, both fine-tuned end to end (all parameters trainable):
+    *   **Transformers:**
         *   **RobeCzech (`ufal/robeczech-base`):** Czech RoBERTa. Selected for final results.
 *   **Classifiers:** scikit-learn classifiers such as LogisticRegression, LinearSVC, MultinomialNB, ComplementNB, RandomForest and XGBoost.
 *   **Hyperparameter tuning:** Optuna, per-classifier studies, macro-F1 as the objective.
