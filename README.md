@@ -53,7 +53,7 @@ The project installs as an editable package, which registers `src/` on the impor
 path (so `from src.config import ...` works from anywhere) and pulls in all
 dependencies from `pyproject.toml`.
 
-**Cloud Jupyter (e.g. MetaCentrum), installing into the active environment:**
+**Setup commands**
 
 ```bash
 git clone https://github.com/Jpoker01/sport_article_classifier.git
