@@ -1,19 +1,20 @@
 # Czech Sport Article Classifier
 
-This project classifies Czech sport news articles into multiple sport categories based on the article title and perex. Three approaches are compared: 
-* TF-IDF with classical classifiers.
-* Pretrained fastText embeddings with the same classifier family.
-* Fine-tuned Czech transformer.
+Machine learning project focused on training an optimal classifier model for Czech sport news
+articles. Three approaches are compared: 
+* TF-IDF in combination with traditional classifiers.
+* Pretrained fastText embeddings with the same traditional classifiers.
+* Fine-tuned transformer.
   
 All hyperparameters are tuned with Optuna against validation macro-F1.  
 
 ## Results
 
-| Method | Macro-F1   | Accuracy   | Inference (ms/sample) | Model size |
-|--------|------------|------------|-----------------------|------------|
-| RobeCzech, fine-tuned | **0.9711** | **0.9913** | 3.5185 | 484 MB |
-| TF-IDF + Logistic Regression |   0.9180  |  0.9862     | 0.3502 | 21 MB |
-| fastText + XGBoost | 0.8024     | 0.9644     | 0.1464 | ~7 GB |
+| Method | Macro-F1 | Accuracy | Inference | Size |
+|---|---|---|---|---|
+| **RobeCzech, fine-tuned** | **0.973** | **0.992** | 1.5 ms/sample (A40) | 484 MB |
+| TF-IDF + LinearSVC | 0.967 | 0.989 | 0.22 ms/sample (CPU) | 16 MB |
+| fastText + LinearSVC | 0.905 | 0.969 | 0.24 ms/sample (CPU) | ~7 GB  |
 
 Macro-F1 is the primary metric because the classes are heavily imbalanced.
 
@@ -24,7 +25,6 @@ Macro-F1 is the primary metric because the classes are heavily imbalanced.
     *   **fastText:** Pretrained Czech 300-dimensional embeddings (`cc.cs.300.bin`), averaged into one document vector.
     *   **Transformers:** Two Czech encoders tried, both fine-tuned end to end (all parameters trainable):
         *   **RobeCzech (`ufal/robeczech-base`):** Czech RoBERTa. Selected for final results.
-        *   **Small-E-Czech (`Seznam/small-e-czech`):** Czech ELECTRA. Tried and dropped after reaching only 0.63 validation macro-F1 with the same recipe.  
 *   **Classifiers:** scikit-learn classifiers such as LogisticRegression, LinearSVC, MultinomialNB, ComplementNB, RandomForest and XGBoost.
 *   **Hyperparameter tuning:** Optuna, per-classifier studies, macro-F1 as the objective.
 *   **Environment:** Jupyter for analysis and results, PyCharm for development.
@@ -32,16 +32,12 @@ Macro-F1 is the primary metric because the classes are heavily imbalanced.
 ## Quickstart guide
 
 ### Software requirements
-- Python 3.11 to 3.13
+- Python 3.11 to 3.12
 - Git
 - Linux, macOS or Windows. The TF-IDF and transformer pipelines need nothing beyond the above.
-- **Only for the fastText pipeline:** a C++ toolchain, because fastText ships no
-  usable prebuilt wheels and is compiled from source during installation
-  (`build-essential` on Linux, `xcode-select --install` on macOS, Visual C++ Build
-  Tools or WSL2 on Windows). See [Optional: the fastText pipeline](#optional-the-fasttext-pipeline).
 
 ### Hardware requirements
-All code was executed on the MetaCentrum Jupyter environment:
+All code was executed inside of the MetaCentrum Jupyter environment:
 - **GPU:** NVIDIA A40 (48 GB VRAM)
 - **CPU:** 16 cores
 - **RAM:** 64 GB
@@ -64,24 +60,6 @@ git clone https://github.com/Jpoker01/sport_article_classifier.git
 cd sport_article_classifier
 pip install -e .
 ```
-
-The notebooks then run under the environment's default kernel, no extra kernel
-registration needed.
-
-**Optional, isolated virtual environment:**
-
-```bash
-python -m venv .venv
-source .venv/bin/activate
-pip install -e .
-python -m ipykernel install --user --name sport-classifier --display-name "Python (sport-classifier)"
-```
-
-When using the venv, select the **Python (sport-classifier)** kernel in each
-notebook before running the cells.
-
-This base install is enough for the TF-IDF pipeline, the transformer pipeline and
-all three notebooks. It needs no compiler and works on Linux, macOS and Windows.
 
 ### Data preparation
 
@@ -106,14 +84,14 @@ Each Optuna study runs `N_TRIALS` trials per classifier (or per configuration fo
 
 **TF-IDF + classical classifiers**
 ```bash
-python scripts/run_traditional.py --n-trials N_TRIALS
-python scripts/finalize_traditional.py
+python -m scripts.run_traditional --n-trials N_TRIALS
+python -m scripts.finalize_traditional
 ```
 
 **fastText embeddings + classical classifiers**
 ```bash
-python scripts/run_embeddings.py --n-trials N_TRIALS
-python scripts/finalize_embeddings.py
+python -m scripts.run_embeddings --n-trials N_TRIALS
+python -m scripts.finalize_embeddings
 ```
 
 **Fine-tuned transformer**
@@ -121,23 +99,14 @@ python scripts/finalize_embeddings.py
 The reported results use `ufal/robeczech-base`. The `--model-name` argument accepts any Hugging Face model identifier compatible with `AutoModelForSequenceClassification`.
 
 ```bash
-python scripts/tune_transformer.py --model-name ufal/robeczech-base --n-trials N_TRIALS
-python scripts/run_transformer.py --model-name ufal/robeczech-base --run-name tuned \
-    --lr <LR> --batch-size <BATCH_SIZE> --weight-decay <WEIGHT_DECAY> --label-smoothing <LABEL_SMOOTHING>
-python scripts/finalize_transformer.py --model-dir results/transformer/ufal_robeczech-base__tuned/best
+python -m scripts.tune_transformer --model-name ufal/robeczech-base --n-trials N_TRIALS
+python -m scripts.run_transformer --model-name ufal/robeczech-base
+python -m scripts.finalize_transformer --model-dir results/transformer/ufal_robeczech-base
 ```
 
-Replace `<LR>`, `<BATCH_SIZE>`, `<WEIGHT_DECAY>` and `<LABEL_SMOOTHING>` with the winning row from `results/transformer/ufal_robeczech-base_optuna_trials.csv`.
 ### Results analysis
 
 Once all three finalize scripts have run, open `notebooks/results_analysis.ipynb` for the final comparison table, confusion matrices, per-class F1 and error analysis.
-
-> **This notebook cannot be executed on a bare clone.** It reads the prediction and
-> metric artifacts that the three `finalize_*.py` scripts write into `results/`, and
-> those depend on the raw dataset and on trained model weights, neither of which is in
-> this repository (the data source cannot be disclosed, and the weights are several GB).
-> A fresh clone therefore has to run the data preparation and the three pipelines above
-> first. The committed cell outputs show the results the report is based on.
 
 ## Project structure
 
@@ -148,21 +117,16 @@ The work is organized as follows:
  * **/notebooks** - Jupyter notebooks
    * **data_analysis.ipynb** - Exploratory analysis of the raw dataset
    * **data_prep.ipynb** - Cleaning, deduplication and stratified split
-   * **results_analysis.ipynb** - Final comparison, figures and error analysis
+   * **tokenization_analysis.ipynb** - token-length check for the transformer encoders
+   * **results_analysis.ipynb** - final comparison, figures and error analysis
  * **/src** - Importable package, no scripts
    * **config.py** - Paths, seed, split sizes, shared constants
    * **classifiers.py** - Classifier configurations and Optuna search spaces
    * **traditional.py** - TF-IDF representation and its Optuna objective
    * **embeddings.py** - fastText representation and its Optuna objective
    * **transformer.py** - Dataset, metrics, weighted trainer, Optuna objective
+   * **weighting.py** - capped inverse-frequency class weights
    * **evaluate.py** - Shared metric and reporting helpers
- * **/scripts** - Entry points for experiments
-   * **run_traditional.py** - Optuna search over TF-IDF classifiers
-   * **run_embeddings.py** - Optuna search over fastText classifiers
-   * **tune_transformer.py** - Optuna search over transformer fine-tuning hyperparameters
-   * **run_transformer.py** - Single transformer fine-tuning run (based on the winner combination)
-   * **finalize_traditional.py** - Refits the winning TF-IDF configuration on train data and evaluates it on the test split
-   * **finalize_embeddings.py** - Refits the winning fastText classifier on train data and evaluates it on the test split
-   * **finalize_transformer.py** - Loads the fine-tuned transformer from `--model-dir` and evaluates it on the test split
- * **/results** - Metrics, predictions and figures. Trained model weights are **not included in git** due to size and to avoid disclosing any data information.
+* **scripts/** - entry points (`run_*`/`tune_*` search, `finalize_*` refit and evaluate on test)
+* **results/** - metrics, predictions and figures per method. Trained weights are not in git; the transformer weights are on the Hugging Face Hub.
 
