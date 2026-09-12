@@ -4,7 +4,7 @@ Machine learning project focused on training an optimal classifier model for Cze
 articles. Three approaches are compared: 
 * TF-IDF in combination with traditional classifiers.
 * Pretrained fastText embeddings with the same traditional classifiers.
-* Fine-tuned transformer.
+* Fine-tuned czech transformer.
   
 All hyperparameters are tuned with Optuna against validation macro-F1.  
 
@@ -12,15 +12,15 @@ All hyperparameters are tuned with Optuna against validation macro-F1.
 
 | Method | Macro-F1 | Accuracy | Inference | Size |
 |---|---|---|---|---|
-| **RobeCzech, fine-tuned** | **0.973** | **0.992** | 1.5 ms/sample (A40) | 484 MB |
-| TF-IDF + LinearSVC | 0.967 | 0.989 | 0.22 ms/sample (CPU) | 16 MB |
-| fastText + LinearSVC | 0.905 | 0.969 | 0.24 ms/sample (CPU) | ~7 GB  |
+| **RobeCzech, fine-tuned** | **97.3%** | **99.2%** | 1.5 ms/sample (A40) | 484 MB |
+| TF-IDF + LinearSVC | 96.7% | 98.9% | 0.22 ms/sample (CPU) | 16 MB |
+| fastText + LinearSVC | 90.5% | 96.9% | 0.24 ms/sample (CPU) | ~7 GB |
 
 Macro-F1 is the primary metric because the classes are heavily imbalanced.
 
 ## Tech Stack
-*   **Language:** Python 3.11 to 3.13 (results produced on 3.13)
-*   **Text representations:**
+*   **Language:** Python 3.11 to 3.12 (results produced on 3.12)
+*   **Methods**
     *   **TF-IDF (scikit-learn):** Optuna selects between word-level unigrams/bigrams and character n-grams (`analyzer="char_wb"`), sparse features.
     *   **fastText:** Pretrained Czech 300-dimensional embeddings (`cc.cs.300.bin`), averaged into one document vector.
     *   **Transformers:** Two Czech encoders tried, both fine-tuned end to end (all parameters trainable):
